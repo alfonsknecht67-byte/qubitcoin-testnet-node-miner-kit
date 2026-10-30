@@ -39,7 +39,7 @@ Test coins are not mainnet QTC. Testnets may reset. Mining is optional and does 
 
 ## Verify a downloaded release
 
-The release includes a separate SHA-256 file for the ZIP. In PowerShell, run `Get-FileHash .\Qubitcoin-Testnet-Community-Kit-v0.1.0-rc.1.zip -Algorithm SHA256` and compare it to the published digest. A matching hash proves the downloaded file matches that release; it does not establish that the software is safe.
+The release includes a separate SHA-256 file for the ZIP. In PowerShell, run `Get-FileHash .\Qubitcoin-Testnet-Community-Kit-v0.1.0-rc.2.zip -Algorithm SHA256` and compare it to the published digest. A matching hash proves the downloaded file matches that release; it does not establish that the software is safe.
 
 ## License
 
