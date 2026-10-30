@@ -120,6 +120,11 @@ Thread 0, CPU ...: ... h/s</code></pre>
 <p><strong>“systemd is not active”:</strong> ask for help updating/configuring WSL. Do not run <code>wsl --shutdown</code> on a machine hosting another node without planning the interruption.</p>
 <p><strong>“Method not found” for wallet commands:</strong> wallet support is missing from that binary. This helper explicitly builds SQLite wallet support; ask for help rather than trying to import a mainnet wallet.</p>
 <p><strong>“Could not connect to server”:</strong> check the node service with <code>systemctl is-active</code>. Make sure you are using the guide&#x27;s <code>node-cli</code>, which selects the correct testnet directory and RPC port.</p>
+<p><strong>“Permission denied” when reading <code>miner.log</code>:</strong> early kit versions could let systemd create a root-owned log. The node and miner may still be running. Version v0.1.0-rc.4 pre-creates a private, user-owned log. For an existing installation, run these in Ubuntu; no reinstall or service restart is needed:</p>
+<pre><code>sudo chown &quot;$(id -u):$(id -g)&quot; &quot;$HOME/qubitcoin-community-testnet/miner.log&quot;
+chmod 600 &quot;$HOME/qubitcoin-community-testnet/miner.log&quot;
+tail -n 20 &quot;$HOME/qubitcoin-community-testnet/miner.log&quot;</code></pre>
+<p>Alternatively, use the <code>repair-log-permissions.sh</code> included in the new ZIP. Do not delete the existing testnet folder or wallet and do not rerun setup over it.</p>
 <p><strong>“Illegal instruction”:</strong> the binary does not match the CPU&#x27;s supported instructions. This helper builds locally and disables SHA CPU instructions, matching the tested CPU approach. Stop and report the error if it still occurs.</p>
 <p><strong>No rewards yet:</strong> a positive hashrate is not a promise of an immediate block. Check peer connectivity and synchronization first.</p>
 <p><strong>No Telegram command works:</strong> this kit does not install a Telegram bot. <code>/testnet</code> commands belong to the community&#x27;s existing monitoring bot and do not automatically show your new personal node.</p>

@@ -2,6 +2,7 @@
 import ast
 import hashlib
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -10,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 subprocess.run(['bash', '-n', str(ROOT / 'setup-testnet.sh')], check=True)
+subprocess.run(['bash', '-n', str(ROOT / 'repair-log-permissions.sh')], check=True)
 ast.parse((ROOT / 'start-miner.py').read_text())
 for line in (ROOT / 'SHA256SUMS.txt').read_text().splitlines():
     digest, name = line.split('  ', 1)
@@ -24,6 +26,16 @@ settings = (ROOT / 'setup-testnet.sh').read_text()
 assert '--enable-wallet' in settings and '--with-sqlite=yes' in settings
 assert '-mno-sha' in settings and 'rm -rf' not in settings and 'killall' not in settings
 assert "'threads': 1" in (ROOT / 'start-miner.py').read_text()
+assert 'install -m 600 /dev/null "$BASE/miner.log"' in settings
+assert settings.index('install -m 600 /dev/null "$BASE/miner.log"') < settings.index('StandardOutput=append:')
+with tempfile.TemporaryDirectory(prefix='testnet-log-check-') as temp:
+    logfile = Path(temp) / 'miner.log'
+    subprocess.run(['install', '-m', '600', '/dev/null', str(logfile)], check=True)
+    assert logfile.stat().st_uid == os.getuid()
+    assert logfile.stat().st_mode & 0o777 == 0o600
+    with logfile.open('a') as stream:
+        stream.write('log permission check\n')
+    assert logfile.read_text() == 'log permission check\n'
 upstream = json.loads((ROOT / 'UPSTREAM.json').read_text())
 revision = upstream['node']['commit']
 assert re.fullmatch(r'[0-9a-f]{40}', revision)

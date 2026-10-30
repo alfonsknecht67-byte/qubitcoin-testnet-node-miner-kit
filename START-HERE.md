@@ -238,6 +238,16 @@ That backup contains wallet secrets. Keep it private. Do not post it, your seed,
 
 **“Could not connect to server”:** check the node service with `systemctl is-active`. Make sure you are using the guide's `node-cli`, which selects the correct testnet directory and RPC port.
 
+**“Permission denied” when reading `miner.log`:** early kit versions could let systemd create a root-owned log. The node and miner may still be running. Version v0.1.0-rc.4 pre-creates a private, user-owned log. For an existing installation, run these in Ubuntu; no reinstall or service restart is needed:
+
+```bash
+sudo chown "$(id -u):$(id -g)" "$HOME/qubitcoin-community-testnet/miner.log"
+chmod 600 "$HOME/qubitcoin-community-testnet/miner.log"
+tail -n 20 "$HOME/qubitcoin-community-testnet/miner.log"
+```
+
+Alternatively, use the `repair-log-permissions.sh` included in the new ZIP. Do not delete the existing testnet folder or wallet and do not rerun setup over it.
+
 **“Illegal instruction”:** the binary does not match the CPU's supported instructions. This helper builds locally and disables SHA CPU instructions, matching the tested CPU approach. Stop and report the error if it still occurs.
 
 **No rewards yet:** a positive hashrate is not a promise of an immediate block. Check peer connectivity and synchronization first.

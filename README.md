@@ -1,14 +1,14 @@
 # Qubitcoin Testnet Community Kit
 
-**Unofficial community guide · Windows 11 + Ubuntu 26.04 / WSL2 · CPU-only · release candidate**
+**Unofficial community guide Â· Windows 11 + Ubuntu 26.04 / WSL2 Â· CPU-only Â· release candidate**
 
 Run a separate testnet node and optionally mine qhash with one CPU thread. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
 
 ## Read before downloading
 
-- **[Beginner guide](START-HERE.md)** — readable directly on GitHub, with step-by-step instructions.
-- **[Browser-friendly guide](https://alfonsknecht67-byte.github.io/qubitcoin-testnet-community-kit/)** — the same instructions as a static website, once Pages deployment is enabled.
-- **[Versioned downloads](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-community-kit/releases)** — download a release ZIP, not a changing development snapshot.
+- **[Beginner guide](START-HERE.md)** â€” readable directly on GitHub, with step-by-step instructions.
+- **[Browser-friendly guide](https://alfonsknecht67-byte.github.io/qubitcoin-testnet-community-kit/)** â€” the same instructions as a static website, once Pages deployment is enabled.
+- **[Versioned downloads](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-community-kit/releases)** â€” download a release ZIP, not a changing development snapshot.
 - **[What was tested](VALIDATION.md)** and **[security / privacy notes](SECURITY.md)**.
 
 ## What the helper actually does
@@ -39,8 +39,12 @@ Test coins are not mainnet QTC. Testnets may reset. Mining is optional and does 
 
 ## Verify a downloaded release
 
-The release includes a separate SHA-256 file for the ZIP. In PowerShell, run `Get-FileHash .\Qubitcoin-Testnet-Community-Kit-v0.1.0-rc.3.zip -Algorithm SHA256` and compare it to the published digest. A matching hash proves the downloaded file matches that release; it does not establish that the software is safe.
+The release includes a separate SHA-256 file for the ZIP. In PowerShell, run `Get-FileHash .\Qubitcoin-Testnet-Community-Kit-v0.1.0-rc.4.zip -Algorithm SHA256` and compare it to the published digest. A matching hash proves the downloaded file matches that release; it does not establish that the software is safe.
 
 ## License
 
 Community helper scripts and guide: MIT, copyright 2026 Qubitcoin Testnet Community contributors. Upstream notices are preserved in [COPYING-Qubitcoin.txt](COPYING-Qubitcoin.txt). Source projects retain their own licenses.
+
+## v0.1.0-rc.4 log-permissions fix
+
+The installer now creates `miner.log` as the normal Ubuntu user with mode 600 before systemd starts the miner. Existing installations can use [repair-log-permissions.sh](repair-log-permissions.sh) without reinstalling, stopping services or losing logs. The troubleshooting section includes manual repair commands.

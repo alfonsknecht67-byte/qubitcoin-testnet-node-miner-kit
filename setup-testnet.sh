@@ -49,6 +49,9 @@ sudo apt-get install -y build-essential autoconf automake libtool pkg-config git
   libevent-dev libboost-dev libsqlite3-dev libcurl4-openssl-dev libssl-dev \
   libjansson-dev libgmp-dev zlib1g-dev
 mkdir -m 700 "$BASE" "$BASE/logs" "$BASE/data" "$BASE/bin"
+# systemd opens StandardOutput=append files as root before switching user.
+# Pre-create the file as the participant so it remains private AND readable.
+install -m 600 /dev/null "$BASE/miner.log"
 LOGS="$BASE/logs"
 
 STEP='downloading pinned node source'
