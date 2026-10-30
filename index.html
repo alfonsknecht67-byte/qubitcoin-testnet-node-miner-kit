@@ -1,0 +1,145 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Qubitcoin Testnet — Beginner Guide</title><style>
+body{margin:0;background:#eef3f8;color:#19304a;font:17px/1.65 system-ui,Segoe UI,sans-serif}main{max-width:900px;margin:32px auto;background:white;padding:48px 55px;border-radius:16px;box-shadow:0 8px 30px #18304a14}h1{font-size:36px;line-height:1.2;color:#124578}h2{margin-top:48px;border-top:1px solid #dce5ef;padding-top:24px;color:#124578}h3{color:#124578}p,li{overflow-wrap:anywhere}li{margin:8px 0}a{color:#1667ae}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#112b45;color:#f0f7ff;padding:20px;border-radius:9px;font:15px/1.55 Consolas,monospace;break-inside:avoid}code{font-family:Consolas,monospace;font-size:.94em}p code,li code{background:#eef4fa;padding:2px 5px;border-radius:4px}strong{color:#123b64}@media(max-width:650px){main{padding:24px;margin:0;border-radius:0}h1{font-size:29px}}@media print{body{background:white;font-size:11pt}main{margin:0;padding:0;box-shadow:none;max-width:none}h2,h3{break-after:avoid}pre{background:#edf2f7;color:#142c43;border:1px solid #ccd7e3}a{color:inherit}}
+</style></head><body><main><p><strong>Unofficial community release candidate.</strong> Read the <a href="https://github.com/alfonsknecht67-byte/qubitcoin-testnet-community-kit">source and validation status</a> before running scripts. <a href="https://github.com/alfonsknecht67-byte/qubitcoin-testnet-community-kit/releases">Versioned downloads</a>.</p><h1>Qubitcoin Testnet: your first node and CPU miner</h1>
+<p><strong>Beginner guide for Windows 11 + Ubuntu 26.04 on WSL2</strong> Prepared 30 October 2026. This kit follows a specific, pinned testnet software version.</p>
+<p>You do not need to be a programmer. Read one step, do it, then move to the next. If a step fails, stop there and ask for help in the <strong>Qubitcoin Bubble Map &amp; Research group</strong>. Do not delete a wallet or try random repair commands.</p>
+<h2>What you will set up</h2>
+<ul>
+<li>A <strong>node</strong>: a program that connects to the testnet, downloads blocks and checks them.</li>
+<li>A <strong>separate testnet wallet</strong>: where any rewards from your mining are recorded.</li>
+<li>Optionally, a <strong>CPU miner using one thread</strong>: it tries to find qhash / Task 0 blocks using your normal processor. No NVIDIA GPU or CUDA is required.</li>
+<li>Two background services: once installed, the node and enabled miner start when this Ubuntu distribution starts and restart after failures.</li>
+</ul>
+<p>The node also validates deqode / Task 1 blocks received from the network. This guide does <strong>not</strong> start deqode mining. Installing both tasks in the miner does not mean both are being mined.</p>
+<p><strong>These are testnet coins, not mainnet QTC.</strong> This testnet may change or reset. Finding a block is random; no reward or time-to-reward is guaranteed.</p>
+<h3>Before you begin</h3>
+<p>Use a Windows 11 PC with an Intel or AMD x86-64 processor supporting AVX2 and AES, preferably at least 8 GB RAM and 20 GB free disk space. This kit does not target Windows-on-ARM or Apple Silicon. A computer that does not meet the helper&#x27;s checks needs a different build; ask for help.</p>
+<p>Keep a laptop plugged in and ventilated. Mining adds processor load and electricity use. One thread is the starting point, not a request to use the whole CPU.</p>
+<p>This kit includes a <strong>community CPU adaptation for the node</strong>. It is not an official signed CPU-node installer. The readable patch and helper scripts are included for inspection. They reproduce the source adaptations used by the running community testnet installation; the packaged installer has not been independently run from beginning to end on a second clean Windows machine. Ask for guided help if you are unsure.</p>
+<h2>1. Put the complete kit in one folder</h2>
+<p>Download the ZIP supplied with this guide. In Windows File Explorer:</p>
+<ol>
+<li>Right-click the ZIP and choose <strong>Extract All</strong>.</li>
+<li>Put its contents in a folder named <strong><code>C:\qtc-testnet-kit</code></strong>.</li>
+<li>Open that folder. You should see <code>setup-testnet.sh</code>, <code>start-miner.py</code>, <code>cpu-node.patch</code> and this guide directly inside it.</li>
+</ol>
+<p>If you see another folder inside the first one, open it and move the contents up one level. Do not run anything from inside the compressed ZIP.</p>
+<h2>2. Install Ubuntu inside Windows</h2>
+<p>Ubuntu runs alongside Windows through <strong>WSL</strong>. You do not have to replace Windows or repartition your disk.</p>
+<ol>
+<li>Open the Windows Start menu.</li>
+<li>Type <strong>PowerShell</strong>.</li>
+<li>Right-click it and choose <strong>Run as administrator</strong>.</li>
+<li>Paste this command, then press Enter:</li>
+</ol>
+<pre><code>wsl --install -d Ubuntu-26.04</code></pre>
+<p>If Windows asks to restart, save your work and restart. Do not start a second installation while the first is still running.</p>
+<p><strong>Already using WSL or running a mainnet node?</strong> Do not uninstall anything, unregister a distribution or run <code>wsl --shutdown</code>. Installing another node is not a reason to stop the existing one. Ask for help if the Ubuntu version is already present or you are unsure which distribution contains your mainnet node.</p>
+<p>If the command is not recognized or installation gets stuck, stop and use the official <a href="https://ubuntu.com/wsl/docs/latest/howto/install-ubuntu-wsl2/">Ubuntu WSL installation guide</a> or <a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft WSL instructions</a>.</p>
+<h2>3. Open Ubuntu and create its login</h2>
+<p>Search the Windows Start menu for <strong>Ubuntu 26.04</strong> and open it. Alternatively, use this in PowerShell:</p>
+<pre><code>wsl -d Ubuntu-26.04</code></pre>
+<p>At the first launch, Ubuntu asks for a new username and password. Choose a simple lowercase username and remember the password.</p>
+<p><strong>Nothing appears when you type the password—not even dots. This is normal.</strong> Type it and press Enter. This is your Ubuntu login password, not a Qubitcoin seed phrase or wallet key.</p>
+<p>From this point, commands labelled <strong>Ubuntu</strong> go in the Ubuntu window, not in PowerShell. Paste with a right-click or Ctrl+Shift+V if normal Ctrl+V does not work.</p>
+<h2>4. Start the guided testnet setup</h2>
+<p>In <strong>Ubuntu</strong>, paste:</p>
+<pre><code>bash /mnt/c/qtc-testnet-kit/setup-testnet.sh</code></pre>
+<p>The helper checks the computer, confirms that its dedicated testnet folder and service names are unused, and checks that its ports are free. It refuses to overwrite an existing setup.</p>
+<p>When it asks for confirmation, type:</p>
+<pre><code>TESTNET</code></pre>
+<p>It may ask for your Ubuntu password to install build tools and the two new testnet services. Again, no characters appear while typing it.</p>
+<p>The helper downloads the official node and miner sources at the exact revisions listed below, applies the supplied CPU-node patch, builds the programs, enables wallet support and creates the separate testnet wallet. It uses an isolated directory:</p>
+<pre><code>~/qubitcoin-community-testnet</code></pre>
+<p>It does not use your mainnet data directory, mainnet wallet or existing mainnet service. Do not change that isolation by copying a mainnet configuration into the testnet folder.</p>
+<p><strong>Allow 15–60 minutes or longer for the first build.</strong> A quiet screen does not necessarily mean it stopped: detailed build output is saved in the new testnet folder&#x27;s <code>logs</code> directory. Keep Ubuntu open. If an error stops setup, copy the error and ask for help; the helper deliberately does not overwrite a partially created setup on a second run.</p>
+<h2>5. Decide whether to mine</h2>
+<p>Near the end, the helper asks whether to start CPU mining. Type <strong>YES</strong> to start one qhash-cpu mining thread, or just press Enter to operate a node without mining.</p>
+<p>A node without a miner still helps by independently checking and sharing testnet blocks. CPU mining is optional.</p>
+<p>Wait for <strong><code>Setup complete.</code></strong> before continuing.</p>
+<h2>6. Check that your node is connected and synchronized</h2>
+<p>In <strong>Ubuntu</strong>, run:</p>
+<pre><code>~/qubitcoin-community-testnet/bin/node-cli getblockchaininfo</code></pre>
+<p>Look for:</p>
+<ul>
+<li><code>&quot;chain&quot;: &quot;test&quot;</code> — this is the testnet.</li>
+<li>Equal numbers for <code>blocks</code> and <code>headers</code>.</li>
+<li><code>&quot;initialblockdownload&quot;: false</code> — the node has finished its initial download.</li>
+<li><code>verificationprogress</code> close to <code>1</code>.</li>
+</ul>
+<p>The exact block number changes as the testnet grows. Do not expect the number shown in someone else&#x27;s screenshot.</p>
+<p>Now check peer connections:</p>
+<pre><code>~/qubitcoin-community-testnet/bin/node-cli getconnectioncount</code></pre>
+<p>You want <strong>at least 1</strong>. If it stays at zero, mining cannot properly participate in the network. Ask the group for the current testnet peer. The peer in this kit is <code>54.158.147.24:42070</code>, verified for the setup described here; it can change later. No router port-forwarding is needed just to make outbound connections.</p>
+<h2>7. Check that your CPU miner is working</h2>
+<p>If you chose mining, run:</p>
+<pre><code>tail -n 20 ~/qubitcoin-community-testnet/miner.log</code></pre>
+<p>Look for a message similar to:</p>
+<pre><code>1 of ... miner threads started using &#x27;qhash-cpu&#x27; algorithm
+Thread 0, CPU ...: ... h/s</code></pre>
+<p>The numbers will depend on your computer. A recent positive rate shows the miner is doing work. The node must also have a peer and be synchronized. Repeated RPC errors are not normal mining progress.</p>
+<p>You do not need to find a block immediately. Mining is a search, so long waits without a reward are possible.</p>
+<h2>8. See your separate testnet wallet</h2>
+<pre><code>~/qubitcoin-community-testnet/bin/node-cli -rpcwallet=cpu-testnet getwalletinfo</code></pre>
+<ul>
+<li><code>balance</code>: rewards or other funds that are already spendable.</li>
+<li><code>immature_balance</code>: mined rewards that are recorded but still locked by the maturity rule.</li>
+<li><code>unconfirmed_balance</code>: transactions not yet confirmed.</li>
+<li><code>txcount</code>: the number of wallet transactions—not the number of coins.</li>
+</ul>
+<p>The wallet starts empty. A block reward is only earned if a block you find is accepted and remains in the active chain.</p>
+<p><strong>Why is Balance still zero after a reward?</strong> This pinned testnet uses a 100-block coinbase maturity rule. Its wallet shows the reward as mature at 101 confirmations, including the reward block. For example, a reward in block 28 appears as mature when the chain reaches height 128, provided that block remains in the active chain. This depends on blocks, not a fixed number of hours.</p>
+<p>The wallet lives locally in Ubuntu. It is not automatically connected to the homepage&#x27;s webwallet or an exchange.</p>
+<h2>9. Keep the node running</h2>
+<p>For a simple test session, keep the Ubuntu window open and run:</p>
+<pre><code>sleep infinity</code></pre>
+<p>Leave that window open while you use other Windows applications. Use a second Ubuntu window for status commands. Ctrl+C ends the waiting command; it is not the command for gracefully stopping the node.</p>
+<p>The services start automatically <strong>when this Ubuntu distribution starts</strong>. This guide does not create a Windows login task to start WSL. After a Windows restart, open Ubuntu again. A sleeping or powered-off PC does not participate. A continuously available machine is more useful than one that sleeps frequently.</p>
+<h2>10. Pause or resume CPU mining</h2>
+<p>Pause mining for the current session:</p>
+<pre><code>sudo systemctl stop qubitcoin-community-testnet-miner.service</code></pre>
+<p>The node can continue running. Resume mining with:</p>
+<pre><code>sudo systemctl start qubitcoin-community-testnet-miner.service</code></pre>
+<p>If you enabled mining during setup, it is configured to start again with Ubuntu. A temporary pause is not a permanent disable.</p>
+<p>If you chose node-only setup and later want to enable mining, ask for help enabling its startup dependency as well; do not rerun the installer over the existing wallet.</p>
+<h2>11. Stop and start safely</h2>
+<p>Before deliberately closing your test session or shutting down Windows, stop these <strong>testnet services only</strong>:</p>
+<pre><code>sudo systemctl stop qubitcoin-community-testnet-miner.service qubitcoin-community-testnet-node.service</code></pre>
+<p>To start them again if mining was enabled:</p>
+<pre><code>sudo systemctl start qubitcoin-community-testnet-node.service</code></pre>
+<p>To check whether the services are running:</p>
+<pre><code>systemctl is-active qubitcoin-community-testnet-node.service qubitcoin-community-testnet-miner.service</code></pre>
+<p><code>active</code> means running. A miner intentionally left disabled in a node-only setup may show <code>inactive</code>.</p>
+<p>Do not use commands that stop every <code>qubitcoind</code> process or shut down all WSL distributions. Those could interrupt a separate mainnet installation.</p>
+<h2>12. Back up the testnet wallet</h2>
+<p>While the node is running:</p>
+<pre><code>~/qubitcoin-community-testnet/bin/node-cli -rpcwallet=cpu-testnet backupwallet &quot;$HOME/qubitcoin-testnet-wallet-backup.dat&quot;</code></pre>
+<p>That backup contains wallet secrets. Keep it private. Do not post it, your seed, private keys, authentication cookie or <code>miner-local.json</code> in Telegram. Never substitute your mainnet wallet for the testnet wallet.</p>
+<h2>If something does not work</h2>
+<p><strong>“No such file or directory” at step 4:</strong> check that the ZIP is fully extracted to <code>C:\qtc-testnet-kit</code> and the scripts are not inside an extra nested folder.</p>
+<p><strong>“systemd is not active”:</strong> ask for help updating/configuring WSL. Do not run <code>wsl --shutdown</code> on a machine hosting another node without planning the interruption.</p>
+<p><strong>“Method not found” for wallet commands:</strong> wallet support is missing from that binary. This helper explicitly builds SQLite wallet support; ask for help rather than trying to import a mainnet wallet.</p>
+<p><strong>“Could not connect to server”:</strong> check the node service with <code>systemctl is-active</code>. Make sure you are using the guide&#x27;s <code>node-cli</code>, which selects the correct testnet directory and RPC port.</p>
+<p><strong>“Illegal instruction”:</strong> the binary does not match the CPU&#x27;s supported instructions. This helper builds locally and disables SHA CPU instructions, matching the tested CPU approach. Stop and report the error if it still occurs.</p>
+<p><strong>No rewards yet:</strong> a positive hashrate is not a promise of an immediate block. Check peer connectivity and synchronization first.</p>
+<p><strong>No Telegram command works:</strong> this kit does not install a Telegram bot. <code>/testnet</code> commands belong to the community&#x27;s existing monitoring bot and do not automatically show your new personal node.</p>
+<p>For support, share your Ubuntu version, the step number and the exact error. Review any logs or screenshots first and remove credentials. A clear report helps the team reproduce problems.</p>
+<h2>What this kit does—and what was checked</h2>
+<ul>
+<li>Node revision: <code>6c4f95a4c9b8975526fc7cb2eb32c721ab178cde</code> from the official <code>super-quantum/qubitcoin</code> repository, plus the supplied community CPU patch.</li>
+<li>Miner revision: <code>62b3d51395ce2e2bda0d4ca56368842f4c11b6a9</code> from <code>super-quantum/qubitcoin-miner</code>.</li>
+<li>SQLite wallet support; CPU miner built for the local CPU with SHA CPU instructions disabled.</li>
+<li>Dedicated RPC: <code>127.0.0.1:18452</code>; dedicated local peer-listening port: <code>18453</code>; outbound developer peer: <code>54.158.147.24:42070</code>.</li>
+<li>Helper shell syntax, Python launcher syntax and application of the CPU patch to the pinned source are checked separately. The installer itself has not been run end-to-end on a second clean PC. The node/miner adaptations are based on the functioning community setup and are not a substitute for broad platform testing.</li>
+<li>No Mainnet upgrade, automatic source updates, firewall changes, WSL shutdown, remote monitoring, seed export or Telegram integration.</li>
+</ul>
+<p>Before following an old copy, ask the group whether this is still the recommended testnet version and peer. Testnet protocols can change.</p>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://ubuntu.com/wsl/docs/latest/howto/install-ubuntu-wsl2/">Ubuntu on WSL installation</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Microsoft WSL installation</a></li>
+<li><a href="https://github.com/super-quantum/qubitcoin/tree/6c4f95a4c9b8975526fc7cb2eb32c721ab178cde">Official Qubitcoin source</a></li>
+<li><a href="https://github.com/super-quantum/qubitcoin-miner/tree/62b3d51395ce2e2bda0d4ca56368842f4c11b6a9">Official miner source</a></li>
+<li><a href="https://github.com/super-quantum/qubitcoin/blob/6c4f95a4c9b8975526fc7cb2eb32c721ab178cde/doc/pow-tasks.md">Proof-of-work task documentation</a></li>
+</ul>
+<p>The helper scripts are provided as community testnet tooling without a warranty. Qubitcoin&#x27;s original MIT license is included in <code>COPYING-Qubitcoin.txt</code>.</p></main></body></html>

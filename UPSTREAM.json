@@ -1,0 +1,11 @@
+{
+  "node": {
+    "repository": "https://github.com/super-quantum/qubitcoin.git",
+    "commit": "6c4f95a4c9b8975526fc7cb2eb32c721ab178cde",
+    "community_patch": "cpu-node.patch"
+  },
+  "miner": {
+    "repository": "https://github.com/super-quantum/qubitcoin-miner.git",
+    "commit": "62b3d51395ce2e2bda0d4ca56368842f4c11b6a9"
+  }
+}

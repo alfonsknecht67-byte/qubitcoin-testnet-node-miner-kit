@@ -1,0 +1,10 @@
+*.log
+*.sqlite3
+.env
+.cookie
+miner-local.json
+wallet.dat
+__pycache__/
+node-source/
+miner-source/
+dist/

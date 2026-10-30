@@ -1,0 +1,42 @@
+"""Read-only source/package checks; does not run the installer or miner."""
+import ast
+import hashlib
+import json
+import re
+import subprocess
+import tempfile
+import urllib.request
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+subprocess.run(['bash', '-n', str(ROOT / 'setup-testnet.sh')], check=True)
+ast.parse((ROOT / 'start-miner.py').read_text())
+for line in (ROOT / 'SHA256SUMS.txt').read_text().splitlines():
+    digest, name = line.split('  ', 1)
+    path = (ROOT / name).resolve()
+    assert path.is_relative_to(ROOT), 'Checksum path escapes repository'
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, name
+for name in ('index.html', 'START-HERE.html'):
+    text = (ROOT / name).read_text()
+    assert not re.search(r'<(?:script|iframe)\b', text, re.I), name
+    assert not re.search(r'<(?:img|link)\b[^>]*(?:src|href)\s*=', text, re.I), name
+settings = (ROOT / 'setup-testnet.sh').read_text()
+assert '--enable-wallet' in settings and '--with-sqlite=yes' in settings
+assert '-mno-sha' in settings and 'rm -rf' not in settings and 'killall' not in settings
+assert "'threads': 1" in (ROOT / 'start-miner.py').read_text()
+upstream = json.loads((ROOT / 'UPSTREAM.json').read_text())
+revision = upstream['node']['commit']
+assert re.fullmatch(r'[0-9a-f]{40}', revision)
+assert 'NODE_REV=' + revision in settings
+assert 'MINER_REV=' + upstream['miner']['commit'] in settings
+with tempfile.TemporaryDirectory(prefix='testnet-patch-check-') as temp:
+    clean = Path(temp)
+    for name in ('src/Makefile.am', 'src/crypto/qhash.cpp', 'src/crypto/qhash.h'):
+        target = clean / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        url = f'https://raw.githubusercontent.com/super-quantum/qubitcoin/{revision}/{name}'
+        with urllib.request.urlopen(url, timeout=30) as response:
+            target.write_bytes(response.read())
+    subprocess.run(['git', 'apply', '--check', str(ROOT / 'cpu-node.patch')], cwd=clean, check=True)
+print('PASS: syntax, checksums, HTML resources, isolation settings and CPU patch applicability.')
+print('Scope: source/package checks only; not a clean-machine installation or security certification.')
