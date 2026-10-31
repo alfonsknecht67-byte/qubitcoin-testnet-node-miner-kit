@@ -4,6 +4,17 @@
 
 A source-based setup kit for a separate Qubitcoin testnet node and an optional CPU miner. The default mining setup uses qhash-cpu with one worker. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
 
+## Latest miner update: Linux CPU affinity fix
+
+**[CPU affinity fix: physical cores first, then SMT siblings](miner-affinity-fix/README.md)**
+
+Improves default worker placement on Linux/WSL2 and reports CPU-binding failures. Built successfully and tested offline with qhash-cpu and deqode. A hashrate improvement on dual-socket hardware has not yet been measured.
+
+- **[Update without reinstalling your node](miner-affinity-fix/UPDATING.md)**
+- **[Tests and known limitations](miner-affinity-fix/VALIDATION.md)**
+
+This is a separate, optional miner patch. The existing setup installer and previously published release ZIPs do not apply it automatically.
+
 ## Read before downloading
 
 - **[Beginner guide](START-HERE.md)** â€” readable directly on GitHub, with step-by-step instructions.
