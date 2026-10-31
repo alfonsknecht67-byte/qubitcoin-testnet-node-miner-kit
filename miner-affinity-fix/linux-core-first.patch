@@ -1,0 +1,218 @@
+diff --git a/Makefile.am b/Makefile.am
+index de98f1f..09d9cab 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -5,7 +5,7 @@ else
+ JANSSON_INCLUDES=
+ endif
+ 
+-EXTRA_DIST	= example-cfg.json nomacro.pl
++EXTRA_DIST	= example-cfg.json nomacro.pl tests/affinity-test.c
+ 
+ SUBDIRS		= compat
+ 
+@@ -25,6 +25,7 @@ dist_man_MANS	= cpuminer.1
+ qubitcoin_miner_SOURCES = \
+   dummy.cpp \
+   cpu-miner.c \
++  cpu-affinity.h \
+   util.c \
+   api.c \
+   sysinfos.c \
+diff --git a/cpu-miner.c b/cpu-miner.c
+index f5f47a0..765e376 100644
+--- a/cpu-miner.c
++++ b/cpu-miner.c
+@@ -253,6 +253,7 @@ static void format_affinity_mask( char *mask_str, uint64_t mask )
+ 
+ #ifdef __linux /* Linux specific policy and affinity management */
+ #include <sched.h>
++#include "cpu-affinity.h"
+ 
+ static inline void drop_policy(void)
+ {
+@@ -273,13 +274,26 @@ static inline void drop_policy(void)
+ static void affine_to_cpu( struct thr_info *thr )
+ {
+    int thread = thr->id;
+-   cpu_set_t set;
+-   CPU_ZERO( &set );
+-   CPU_SET( thread_affinity_map[ thread ], &set );
++   const int cpu = thread_affinity_map[ thread ];
++   const size_t bytes = CPU_ALLOC_SIZE( cpu + 1 );
++   cpu_set_t *set = CPU_ALLOC( cpu + 1 );
++   if ( !set )
++   {
++      applog( LOG_WARNING, "Affinity: thread %d cannot allocate CPU set", thread );
++      return;
++   }
++   CPU_ZERO_S( bytes, set );
++   CPU_SET_S( cpu, bytes, set );
+    if ( opt_debug )
+       applog( LOG_INFO, "Binding thread %d to cpu %d",
+                         thread, thread_affinity_map[ thread ] );
+-   pthread_setaffinity_np( thr->pth, sizeof(set), &set );
++#ifndef __BIONIC__
++   const int err = pthread_setaffinity_np( pthread_self(), bytes, set );
++   if ( err )
++      applog( LOG_WARNING, "Affinity: thread %d could not bind to CPU %d: %s",
++              thread, cpu, strerror( err ) );
++#endif
++   CPU_FREE( set );
+ }
+ 
+ #elif defined(WIN32) /* Windows */
+@@ -3993,6 +4007,20 @@ int main(int argc, char *argv[])
+    }   
+    if ( opt_affinity )
+    {
++#ifdef __linux
++      int active_cpus = qtc_linux_affinity_map( thread_affinity_map, map_size,
++                                               opt_affinity );
++      if ( active_cpus <= 0 )
++      {
++         applog( LOG_ERR, "Affinity: cannot determine allowed CPUs; use --cpu-affinity 0 to disable binding" );
++         return 1;
++      }
++      if ( !opt_quiet )
++         applog( LOG_INFO, "Affinity: %d allowed/selected logical CPUs; %s",
++                 active_cpus, opt_affinity == UINT64_MAX
++                 ? "physical cores first when topology is available, then SMT siblings"
++                 : "explicit rolling mask, CPU-number order" );
++#else
+       int active_cpus = 0; // total CPUs available using rolling affinity mask
+       for ( int thr = 0, cpu = 0; thr < map_size; thr++, cpu++ )
+       {
+@@ -4000,6 +4028,7 @@ int main(int argc, char *argv[])
+          thread_affinity_map[ thr ] = cpu % num_cpus;
+          if ( cpu < num_cpus ) active_cpus++;
+       }
++#endif
+       if ( opt_n_threads > active_cpus )
+          applog( LOG_WARNING, "Affinity: more threads (%d) than active CPUs (%d)", opt_n_threads, active_cpus );
+       if ( !opt_quiet )
+diff --git a/cpu-affinity.h b/cpu-affinity.h
+new file mode 100644
+--- /dev/null
++++ b/cpu-affinity.h
+@@ -0,0 +1,82 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++#ifndef QTC_CPU_AFFINITY_H
++#define QTC_CPU_AFFINITY_H
++
++#include <errno.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <sched.h>
++#include <unistd.h>
++
++struct qtc_cpu { int cpu, package, core; };
++
++/* Preserve ascending CPU order within each SMT layer. Unknown topology is
++ * treated as one distinct core per logical CPU, never guessed from parity. */
++static void qtc_core_first(struct qtc_cpu *cpus, int count, int *order)
++{
++   int out = 0;
++   for (int layer = 0; out < count; ++layer)
++      for (int i = 0; i < count; ++i)
++      {
++         int sibling = 0;
++         for (int j = 0; j < i; ++j)
++            if (cpus[j].package == cpus[i].package &&
++                cpus[j].core == cpus[i].core) ++sibling;
++         if (sibling == layer) order[out++] = cpus[i].cpu;
++      }
++}
++
++static int qtc_topology_id(int cpu, const char *name)
++{
++   char path[160];
++   int id = -1;
++   snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%d/topology/%s", cpu, name);
++   FILE *f = fopen(path, "r");
++   if (f) { if (fscanf(f, "%d", &id) != 1) id = -1; fclose(f); }
++   return id;
++}
++
++static int qtc_linux_affinity_map(int *map, int size, uint64_t mask)
++{
++   long configured = sysconf(_SC_NPROCESSORS_CONF);
++   int capacity = configured > 128 ? (int)configured : 128;
++   cpu_set_t *allowed = NULL;
++   size_t bytes = 0;
++   for (;;)
++   {
++      bytes = CPU_ALLOC_SIZE(capacity);
++      allowed = CPU_ALLOC(capacity);
++      if (!allowed) return -1;
++      CPU_ZERO_S(bytes, allowed);
++      if (sched_getaffinity(0, bytes, allowed) == 0) break;
++      int err = errno;
++      CPU_FREE(allowed);
++      if (err != EINVAL || capacity > 1048576) return -1;
++      capacity *= 2;
++   }
++   struct qtc_cpu *cpus = calloc(capacity, sizeof(*cpus));
++   int *order = malloc((size_t)capacity * sizeof(*order));
++   if (!cpus || !order) { free(cpus); free(order); CPU_FREE(allowed); return -1; }
++   int count = 0, complete = 1;
++   for (int cpu = 0; cpu < capacity; ++cpu)
++      if (CPU_ISSET_S(cpu, bytes, allowed) && ((mask >> (cpu & 63)) & 1ULL))
++      {
++         cpus[count].cpu = cpu;
++         cpus[count].package = qtc_topology_id(cpu, "physical_package_id");
++         cpus[count].core = qtc_topology_id(cpu, "core_id");
++         if (cpus[count].package < 0 || cpus[count].core < 0) complete = 0;
++         order[count++] = cpu;
++      }
++   CPU_FREE(allowed);
++   if (count && mask == UINT64_MAX)
++   {
++      if (complete) qtc_core_first(cpus, count, order);
++      else fprintf(stderr, "Affinity: incomplete CPU topology; using allowed CPU-number order\n");
++   }
++   if (count) for (int i = 0; i < size; ++i) map[i] = order[i % count];
++   free(cpus);
++   free(order);
++   return count;
++}
++#endif
+diff --git a/tests/affinity-test.c b/tests/affinity-test.c
+new file mode 100644
+--- /dev/null
++++ b/tests/affinity-test.c
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++#define _GNU_SOURCE
++#include <assert.h>
++#include "../cpu-affinity.h"
++int main(void) {
++ struct qtc_cpu c[80]; int out[160];
++ for(int i=0;i<80;i++) c[i]=(struct qtc_cpu){i,i/40,(i/2)%20};
++ qtc_core_first(c,80,out);
++ for(int i=0;i<40;i++){assert(out[i]==2*i);assert(out[40+i]==2*i+1);}
++ struct qtc_cpu sockets[]={{0,0,0},{1,0,0},{2,1,0},{3,1,0}};
++ qtc_core_first(sockets,4,out); assert(out[0]==0&&out[1]==2&&out[2]==1&&out[3]==3);
++ struct qtc_cpu sparse[]={{1,0,0},{4,0,2},{5,0,2},{70,1,15}};
++ qtc_core_first(sparse,4,out); assert(out[0]==1&&out[1]==4&&out[2]==70&&out[3]==5);
++ int n=qtc_linux_affinity_map(out,160,UINT64_MAX);assert(n>0);
++ cpu_set_t allowed; CPU_ZERO(&allowed);assert(sched_getaffinity(0,sizeof allowed,&allowed)==0);
++ for(int i=0;i<160;i++)assert(CPU_ISSET(out[i],&allowed));
++ for(int i=n;i<160;i++)assert(out[i]==out[i%n]);
++ int first=out[0];
++ uint64_t mask=1ULL<<(first&63);
++ int selected=qtc_linux_affinity_map(out,160,mask);assert(selected>0);
++ for(int i=0;i<160;i++)assert((out[i]&63)==(first&63));
++ assert(qtc_linux_affinity_map(out,160,0)==0);
++ struct qtc_cpu nonadjacent[]={{2,0,4},{5,1,4},{9,0,4},{12,1,4},{17,0,4}};
++ qtc_core_first(nonadjacent,5,out);
++ assert(out[0]==2&&out[1]==5&&out[2]==9&&out[3]==12&&out[4]==17);
++ cpu_set_t one; CPU_ZERO(&one);CPU_SET(first,&one);
++ assert(sched_setaffinity(0,sizeof one,&one)==0);
++ assert(qtc_linux_affinity_map(out,160,UINT64_MAX)==1);
++ for(int i=0;i<160;i++)assert(out[i]==first);
++ assert(sched_setaffinity(0,sizeof allowed,&allowed)==0);
++ puts("PASS: 40-core/80-thread topology, distinct sockets, sparse cpuset, allowed CPUs, oversubscription");
++ return 0;
++}
