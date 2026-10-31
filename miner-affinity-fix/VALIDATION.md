@@ -24,4 +24,4 @@ Not established:
 - Accurate host NUMA topology exposure by WSL2.
 - Native Windows compilation (the Windows worker-affinity branch is unchanged).
 
-No mining benchmark or network submission was performed. Running miners, nodes, wallets, services and security settings were not changed. The update is source-only; no executable or raw machine log is included in the publication.
+Two short, one-worker offline benchmarks passed after publication: qhash-cpu and deqode. Both reported worker binding and a benchmark result, exited with status 0, and showed no binding or initialization errors. Deqode used synthetic sizing 64:32:8:4, batch 256 and an 8 MiB pattern-list budget. These smoke tests establish that both CPU algorithms execute, not a throughput improvement. No node/pool URL, wallet configuration or network submission was used. Existing miners, nodes, wallets, services and security settings were not changed. The update is source-only; no executable or raw machine log is included in the publication.
