@@ -9,10 +9,10 @@ You do not need to be a programmer. Read one step, do it, then move to the next.
 
 - A **node**: a program that connects to the testnet, downloads blocks and checks them.
 - A **separate testnet wallet**: where any rewards from your mining are recorded.
-- Optionally, a **CPU miner using one thread**: it tries to find qhash / Task 0 blocks using your normal processor. No NVIDIA GPU or CUDA is required.
-- Two background services: once installed, the node and enabled miner start when this Ubuntu distribution starts and restart after failures.
+- Optionally, **qhash-cpu / Task 0, deqode / Task 1, or both**, starting with one CPU worker per selected task. No NVIDIA GPU or CUDA is required.
+- A node service and two optional miner services: once installed, the node and enabled miner start when this Ubuntu distribution starts and restart after failures.
 
-The node also validates deqode / Task 1 blocks received from the network. This guide does **not** start deqode mining. Installing both tasks in the miner does not mean both are being mined.
+The node also validates deqode / Task 1 blocks received from the network. The updated installer lets you choose qhash-cpu, deqode or both. See [DUAL-TASK.md](DUAL-TASK.md); building both algorithms alone does not start either miner.
 
 **These are testnet coins, not mainnet QTC.** This testnet may change or reset. Finding a block is random; no reward or time-to-reward is guaranteed.
 
@@ -85,7 +85,7 @@ When it asks for confirmation, type:
 TESTNET
 ```
 
-It may ask for your Ubuntu password to install build tools and the two new testnet services. Again, no characters appear while typing it.
+It may ask for your Ubuntu password to install build tools and the new testnet services. Again, no characters appear while typing it.
 
 The helper downloads the official node and miner sources at the exact revisions listed below, applies the supplied CPU-node patch and miner affinity patch, runs the placement tests, builds the programs, enables wallet support and creates the separate testnet wallet. It uses an isolated directory:
 
@@ -99,7 +99,7 @@ It does not use your mainnet data directory, mainnet wallet or existing mainnet 
 
 ## 5. Decide whether to mine
 
-Near the end, the helper asks whether to start CPU mining. Type **YES** to start one qhash-cpu mining thread, or just press Enter to operate a node without mining.
+Near the end, the helper asks whether to start CPU mining. Choose **QHASH**, **DEQODE**, or **BOTH** to start the corresponding task(s), one worker each; press Enter for node-only. See [DUAL-TASK.md](DUAL-TASK.md) for settings and the new monitor.
 
 A node without a miner still helps by independently checking and sharing testnet blocks. CPU mining is optional.
 

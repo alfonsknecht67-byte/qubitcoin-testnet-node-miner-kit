@@ -2,7 +2,11 @@
 
 **Unofficial community guide Â· Windows 11 + Ubuntu 26.04 / WSL2 Â· CPU-only Â· release candidate**
 
-A source-based setup kit for a separate Qubitcoin testnet node and an optional CPU miner. The default mining setup uses qhash-cpu with one worker. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
+A source-based setup kit for a separate Qubitcoin testnet node and an optional CPU miner. Mining is optional: choose qhash-cpu, deqode or both, starting with one worker per task on a fresh installation. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
+
+## New: mine qhash-cpu and deqode separately or together
+
+**[Dual-task setup and update guide](DUAL-TASK.md)** — one node and wallet, two independently controlled CPU miner services. Includes per-task settings, separate private configs/logs, and a local start/stop monitor. Existing installations can update the helpers without rebuilding/restarting the node. Updating never starts mining automatically.
 
 ## Latest miner update: Linux CPU affinity fix
 
@@ -31,7 +35,7 @@ The current source installer applies this patch automatically for fresh installa
 3. Installs build dependencies from Ubuntu's package repositories using `sudo`.
 4. Downloads the two official upstream repositories at exact pinned revisions.
 5. Applies the readable community CPU-node patch and builds locally.
-6. Creates a separate testnet directory, SQLite wallet and two named systemd services.
+6. Creates a separate testnet directory, SQLite wallet and a node service plus two optional miner services.
 7. Asks separately before enabling one-thread CPU mining.
 
 There is no telemetry, seed collection, developer donation address, remote-control service or Telegram token in this kit. Cookie authentication is read locally and written to a permission-restricted miner configuration. The helper does not run `curl | bash`, modify a mainnet wallet, shut down WSL or automatically update its source.

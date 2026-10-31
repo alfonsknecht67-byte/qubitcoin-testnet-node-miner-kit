@@ -26,3 +26,7 @@ A participant reported installation from the published ZIP on another PC: wallet
 The fresh installer now applies the existing pinned miner affinity patch and executes its placement tests before building the miner. The launcher defaults to one worker and reads durable `miner-settings.json` for an explicit worker count and auto/off affinity. Added read-only worker/cgroup diagnostics and a dedicated fresh-install guide.
 
 Validation: shell syntax; package checksums; launcher tests with synthetic local data and mocked exec (default count, persistent counts, affinity opt-out and rejected invalid settings); clean pinned-source affinity patch applicability and placement tests. No nodes or miners were started, stopped or signalled during this update. A full second-machine install and dual-socket throughput measurement remain outstanding.
+
+## Dual-task helper update
+
+Added separate qhash/deqode services, per-task settings/configs/logs, an interactive testnet-only monitor and a backup-preserving helper update. No algorithm or consensus changes. Tests exercise legacy settings, explicit task settings, same-task locking with cross-task independence, config permissions, private credential handling through config rather than command arguments, whitelisted service actions, paused/stale rate display and two repeated mocked helper upgrades. The upgrade test redirects privileged writes to a temporary fake service directory and rejects any start/stop/restart command. Full independent clean installation and sustained simultaneous mining remain unverified.

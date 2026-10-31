@@ -8,3 +8,8 @@ __pycache__/
 node-source/
 miner-source/
 dist/
+
+miner-*-local.json
+miner-settings.json
+*.lock
+dual-task-backup.*/

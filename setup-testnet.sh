@@ -35,8 +35,8 @@ fi
 if ss -ltnH | awk '{print $4}' | grep -Eq ':(18452|18453)$'; then
   echo 'A required testnet port is already in use. Do not stop another node; ask for help.'; exit 1
 fi
-[[ -f "$KIT_DIR/cpu-node.patch" && -f "$KIT_DIR/start-miner.py" && -f "$KIT_DIR/miner-affinity-fix/linux-core-first.patch" ]] || { echo 'Extract the complete kit before running setup.'; exit 1; }
-echo 'This installs a separate Qubitcoin TESTNET node and a one-thread CPU miner.'
+[[ -f "$KIT_DIR/cpu-node.patch" && -f "$KIT_DIR/start-miner.py" && -f "$KIT_DIR/miner-affinity-fix/linux-core-first.patch" && -f "$KIT_DIR/update-dual-task.sh" && -f "$KIT_DIR/testnet-monitor.py" && -f "$KIT_DIR/miner-unit.py" ]] || { echo 'Extract the complete kit before running setup.'; exit 1; }
+echo 'This installs a separate Qubitcoin TESTNET node and two optional CPU mining tasks.'
 echo 'It uses a community CPU-node patch, not an official signed CPU-node release.'
 echo 'Source revisions are pinned. No CUDA, Telegram credentials or seed phrase is required.'
 echo 'The first build can take 15–60 minutes or longer. Keep this window open.'
@@ -129,33 +129,11 @@ UMask=0077
 [Install]
 WantedBy=multi-user.target
 UNIT
-cat > "$BASE/$MINER_SERVICE" <<UNIT
-[Unit]
-Description=Qubitcoin Community Testnet CPU Miner
-After=$NODE_SERVICE
-Requires=$NODE_SERVICE
-PartOf=$NODE_SERVICE
-StartLimitIntervalSec=0
-[Service]
-Type=simple
-User=$USER_NAME
-WorkingDirectory=$BASE
-ExecStartPre=$BASE/bin/node-cli -rpcwait -rpcwaittimeout=60 getblockcount
-ExecStart=/usr/bin/python3 $BASE/bin/start-miner.py
-StandardOutput=append:$BASE/miner.log
-StandardError=append:$BASE/miner.log
-Restart=always
-RestartSec=10
-TimeoutStartSec=75
-TimeoutStopSec=30
-Nice=10
-UMask=0077
-[Install]
-WantedBy=multi-user.target
-UNIT
 sudo install -m 644 "$BASE/$NODE_SERVICE" "/etc/systemd/system/$NODE_SERVICE"
-sudo install -m 644 "$BASE/$MINER_SERVICE" "/etc/systemd/system/$MINER_SERVICE"
-sudo systemd-analyze verify "/etc/systemd/system/$NODE_SERVICE" "/etc/systemd/system/$MINER_SERVICE"
+# Install both task services and the monitor, leaving both stopped until the wallet exists.
+bash "$KIT_DIR/update-dual-task.sh"
+sudo systemd-analyze verify "/etc/systemd/system/$NODE_SERVICE"
+
 sudo systemctl daemon-reload
 sudo systemctl enable --now "$NODE_SERVICE"
 
@@ -167,21 +145,21 @@ echo '[5/6] Waiting for the node, then creating the separate testnet wallet…'
 chmod 600 "$BASE/mining-address.txt"
 echo 'The node is running. It may still be synchronizing with peers.'
 echo 'The peer address may change after this kit was published; ask the group if no peer connects.'
-read -r -p 'Start CPU mining with ONE thread now? Type YES, or press Enter for node-only: ' mining
-if [[ "$mining" == YES ]]; then
-  STEP='starting the one-thread miner'
-  # This dependency is installed only after the wallet and payout address exist.
-  sudo mkdir -p "/etc/systemd/system/$NODE_SERVICE.d"
-  printf '[Unit]\nWants=%s\n' "$MINER_SERVICE" > "$BASE/miner-dependency.conf"
-  sudo install -m 644 "$BASE/miner-dependency.conf" "/etc/systemd/system/$NODE_SERVICE.d/miner.conf"
-  sudo systemctl daemon-reload
-  sudo systemctl enable --now "$MINER_SERVICE"
-fi
+echo 'Mining is optional. Each enabled task starts with ONE worker; both tasks share your CPU.'
+read -r -p 'Start QHASH, DEQODE, BOTH, or press Enter for node-only: ' mining
+case "$mining" in
+  QHASH|YES) sudo systemctl enable --now "$MINER_SERVICE" ;;
+  DEQODE) sudo systemctl enable --now qubitcoin-community-testnet-deqode.service ;;
+  BOTH) sudo systemctl enable --now "$MINER_SERVICE" qubitcoin-community-testnet-deqode.service ;;
+  "") echo 'Node-only: both miners remain stopped.' ;;
+  *) echo 'Unknown choice: no mining started. Use DUAL-TASK.md later.' ;;
+esac
 STEP=complete
 echo '[6/6] Setup complete.'
 echo "Check your node: $BASE/bin/node-cli getblockchaininfo"
 echo "Check your wallet: $BASE/bin/node-cli -rpcwallet=cpu-testnet getwalletinfo"
-echo "Check mining: tail -n 20 $BASE/miner.log"
+echo "Monitor: python3 $BASE/bin/testnet-monitor.py"
+echo "qhash log: $BASE/miner.log; deqode log: $BASE/miner-deqode.log"
 echo 'Services start when this Ubuntu WSL distribution starts, not while the computer is off or asleep.'
 echo 'For this test session, leave Ubuntu open. Run: sleep infinity'
 echo 'Use the guide for stopping, starting, backup and troubleshooting.'

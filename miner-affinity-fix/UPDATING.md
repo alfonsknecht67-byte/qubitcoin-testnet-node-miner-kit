@@ -37,3 +37,7 @@ No prebuilt executable is published in this source-only update. A Linux executab
 On the original miner, `--cpu-affinity 0` disables its worker pinning and leaves placement to Linux. This can be tried at a planned miner restart; it does not itself force one worker per physical core. Applying an external CPU mask while leaving the original miner's own pinning enabled is not a reliable substitute. Changing each running worker's affinity is possible but is more intrusive and is not automated here.
 
 A second terminal window does not select a second socket. The topology and scheduler, not the terminal window, determine CPU placement.
+
+## Enable task 1 alongside qhash
+
+See [DUAL-TASK.md](../DUAL-TASK.md) for the separate helper/service update. It keeps the existing node and wallet and never starts mining automatically.

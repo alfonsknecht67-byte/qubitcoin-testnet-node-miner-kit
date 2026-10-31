@@ -18,7 +18,7 @@ bash /mnt/c/qtc-testnet-kit/setup-testnet.sh
 
 Type `TESTNET` when asked. The installer downloads pinned official node and miner sources, applies the CPU-node adaptation **and the core-first miner affinity fix**, runs the placement tests, builds locally and creates a separate testnet wallet. A first build can take 15–60 minutes or longer. Logs stay under `~/qubitcoin-community-testnet/logs`.
 
-The default is one mining worker. Press Enter at the final mining prompt for node-only operation; type `YES` only if you want mining. The installer refuses to overwrite an existing directory/service or use occupied testnet ports. If it stops, preserve the directory and error; do not delete everything and retry blindly.
+The default is one mining worker. At the final prompt, choose `QHASH`, `DEQODE`, `BOTH`, or press Enter for node-only. See [DUAL-TASK.md](DUAL-TASK.md) for per-task settings and monitor controls. The installer refuses to overwrite an existing directory/service or use occupied testnet ports. If it stops, preserve the directory and error; do not delete everything and retry blindly.
 
 ## 4. Select your worker count
 
