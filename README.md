@@ -10,10 +10,12 @@ A source-based setup kit for a separate Qubitcoin testnet node and an optional C
 
 Improves default worker placement on Linux/WSL2 and reports CPU-binding failures. Built successfully and tested offline with qhash-cpu and deqode. A hashrate improvement on dual-socket hardware has not yet been measured.
 
+- **[Fresh installation: node + patched CPU miner](FRESH-INSTALL.md)**
+- **[Diagnose worker counts and scaling](miner-affinity-fix/SCALING.md)**
 - **[Update without reinstalling your node](miner-affinity-fix/UPDATING.md)**
 - **[Tests and known limitations](miner-affinity-fix/VALIDATION.md)**
 
-This is a separate, optional miner patch. The existing setup installer and previously published release ZIPs do not apply it automatically.
+The current source installer applies this patch automatically for fresh installations. Older release ZIPs are unchanged; use the current-source fresh-install link above. Existing nodes can keep using the separate miner update.
 
 ## Read before downloading
 

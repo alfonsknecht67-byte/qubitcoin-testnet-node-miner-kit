@@ -35,7 +35,7 @@ fi
 if ss -ltnH | awk '{print $4}' | grep -Eq ':(18452|18453)$'; then
   echo 'A required testnet port is already in use. Do not stop another node; ask for help.'; exit 1
 fi
-[[ -f "$KIT_DIR/cpu-node.patch" && -f "$KIT_DIR/start-miner.py" ]] || { echo 'Extract the complete kit before running setup.'; exit 1; }
+[[ -f "$KIT_DIR/cpu-node.patch" && -f "$KIT_DIR/start-miner.py" && -f "$KIT_DIR/miner-affinity-fix/linux-core-first.patch" ]] || { echo 'Extract the complete kit before running setup.'; exit 1; }
 echo 'This installs a separate Qubitcoin TESTNET node and a one-thread CPU miner.'
 echo 'It uses a community CPU-node patch, not an official signed CPU-node release.'
 echo 'Source revisions are pinned. No CUDA, Telegram credentials or seed phrase is required.'
@@ -78,6 +78,10 @@ git -C "$BASE/miner-source" remote add origin https://github.com/super-quantum/q
 git -C "$BASE/miner-source" fetch --depth 1 origin "$MINER_REV" >"$LOGS/miner-download.log" 2>&1
 git -C "$BASE/miner-source" -c advice.detachedHead=false checkout --detach FETCH_HEAD >>"$LOGS/miner-download.log" 2>&1
 cd "$BASE/miner-source"
+git apply --check "$KIT_DIR/miner-affinity-fix/linux-core-first.patch"
+git apply "$KIT_DIR/miner-affinity-fix/linux-core-first.patch"
+cc -std=gnu11 -Wall -Wextra -Werror tests/affinity-test.c -o affinity-test
+./affinity-test >"$LOGS/affinity-test.log" 2>&1
 ./autogen.sh >"$LOGS/miner-build.log" 2>&1
 CFLAGS='-O2 -march=native -mno-sha' LIBS='-lcurl -lz -lssl -lcrypto' \
   ./configure --enable-tasks=qhash-cpu,deqode >>"$LOGS/miner-build.log" 2>&1
@@ -103,6 +107,9 @@ exec "$base/node-source/src/qubitcoin-cli" -testnet -datadir="$base/data" -conf=
 CLI
 chmod 700 "$BASE/bin/node-cli"
 install -m 700 "$KIT_DIR/start-miner.py" "$BASE/bin/start-miner.py"
+install -m 700 "$KIT_DIR/miner-affinity-fix/diagnose.py" "$BASE/bin/diagnose-miner.py"
+printf '{"threads": 1, "affinity": "auto"}\n' > "$BASE/miner-settings.json"
+chmod 600 "$BASE/miner-settings.json"
 USER_NAME=$(id -un)
 cat > "$BASE/$NODE_SERVICE" <<UNIT
 [Unit]

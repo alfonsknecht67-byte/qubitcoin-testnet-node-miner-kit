@@ -25,7 +25,11 @@ for name in ('index.html', 'START-HERE.html'):
 settings = (ROOT / 'setup-testnet.sh').read_text()
 assert '--enable-wallet' in settings and '--with-sqlite=yes' in settings
 assert '-mno-sha' in settings and 'rm -rf' not in settings and 'killall' not in settings
-assert "'threads': 1" in (ROOT / 'start-miner.py').read_text()
+assert "settings.get('threads', 1)" in (ROOT / 'start-miner.py').read_text()
+assert settings.index('git apply "$KIT_DIR/miner-affinity-fix/linux-core-first.patch"') < settings.index('./autogen.sh >"$LOGS/miner-build.log"')
+assert './affinity-test >"$LOGS/affinity-test.log"' in settings
+ast.parse((ROOT / 'miner-affinity-fix/diagnose.py').read_text())
+subprocess.run(['python3', str(ROOT / 'test-launcher.py')], check=True)
 assert 'install -m 600 /dev/null "$BASE/miner.log"' in settings
 assert settings.index('install -m 600 /dev/null "$BASE/miner.log"') < settings.index('StandardOutput=append:')
 with tempfile.TemporaryDirectory(prefix='testnet-log-check-') as temp:

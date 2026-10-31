@@ -1,5 +1,7 @@
 # Updating without reinstalling the node
 
+**Never installed before? Use [Fresh installation](../FRESH-INSTALL.md). This page is for an existing node/miner.**
+
 This patch changes only the miner's Linux CPU placement. No node reinstall, wallet migration, blockchain download or WSL reset is needed.
 
 ## Option A: patch a separate copy of existing miner source

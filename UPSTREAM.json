@@ -6,6 +6,7 @@
   },
   "miner": {
     "repository": "https://github.com/super-quantum/qubitcoin-miner.git",
-    "commit": "62b3d51395ce2e2bda0d4ca56368842f4c11b6a9"
+    "commit": "62b3d51395ce2e2bda0d4ca56368842f4c11b6a9",
+    "community_patch": "miner-affinity-fix/linux-core-first.patch"
   }
 }

@@ -1,7 +1,7 @@
 # Qubitcoin Testnet: your first node and CPU miner
 
 **Beginner guide for Windows 11 + Ubuntu 26.04 on WSL2**  
-Prepared 30 October 2026. This kit follows a specific, pinned testnet software version.
+Updated 31 October 2026. This kit follows a specific, pinned testnet software version.
 
 You do not need to be a programmer. Read one step, do it, then move to the next. If a step fails, stop there and ask for help in the **Qubitcoin Bubble Map & Research group**. Do not delete a wallet or try random repair commands.
 
@@ -24,9 +24,11 @@ Keep a laptop plugged in and ventilated. Mining adds processor load and electric
 
 This kit includes a **community CPU adaptation for the node**. It is not an official signed CPU-node installer. The readable patch and helper scripts are included for inspection. They reproduce the source adaptations used by the running community testnet installation; the packaged installer has not been independently run from beginning to end on a second clean Windows machine. Ask for guided help if you are unsure.
 
+**New installation? Start with [FRESH-INSTALL.md](FRESH-INSTALL.md) for the current source ZIP including the affinity fix.**
+
 ## 1. Put the complete kit in one folder
 
-Download the ZIP supplied with this guide. In Windows File Explorer:
+Download the [current source ZIP](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-node-miner-kit/archive/refs/heads/main.zip). Older release ZIPs do not include the integrated affinity fix. In Windows File Explorer:
 
 1. Right-click the ZIP and choose **Extract All**.
 2. Put its contents in a folder named **`C:\qtc-testnet-kit`**.
@@ -85,7 +87,7 @@ TESTNET
 
 It may ask for your Ubuntu password to install build tools and the two new testnet services. Again, no characters appear while typing it.
 
-The helper downloads the official node and miner sources at the exact revisions listed below, applies the supplied CPU-node patch, builds the programs, enables wallet support and creates the separate testnet wallet. It uses an isolated directory:
+The helper downloads the official node and miner sources at the exact revisions listed below, applies the supplied CPU-node patch and miner affinity patch, runs the placement tests, builds the programs, enables wallet support and creates the separate testnet wallet. It uses an isolated directory:
 
 ```text
 ~/qubitcoin-community-testnet
