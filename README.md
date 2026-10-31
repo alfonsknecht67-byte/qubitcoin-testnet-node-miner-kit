@@ -7,8 +7,8 @@ A source-based setup kit for a separate Qubitcoin testnet node and an optional C
 ## Read before downloading
 
 - **[Beginner guide](START-HERE.md)** â€” readable directly on GitHub, with step-by-step instructions.
-- **[Browser-friendly guide](https://alfonsknecht67-byte.github.io/qubitcoin-testnet-community-kit/)** â€” the same instructions as a static website, once Pages deployment is enabled.
-- **[Versioned downloads](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-community-kit/releases)** â€” download a release ZIP, not a changing development snapshot.
+- **[Browser-friendly guide](https://alfonsknecht67-byte.github.io/qubitcoin-testnet-node-miner-kit/)** â€” the same instructions as a static website, once Pages deployment is enabled.
+- **[Versioned downloads](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-node-miner-kit/releases)** â€” download a release ZIP, not a changing development snapshot.
 - **[What was tested](VALIDATION.md)** and **[security / privacy notes](SECURITY.md)**.
 
 ## What the helper actually does
