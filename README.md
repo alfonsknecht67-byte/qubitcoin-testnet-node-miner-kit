@@ -1,8 +1,8 @@
-# Qubitcoin Testnet Community Kit
+# Qubitcoin Testnet — Node & CPU Miner Kit
 
 **Unofficial community guide Â· Windows 11 + Ubuntu 26.04 / WSL2 Â· CPU-only Â· release candidate**
 
-Run a separate testnet node and optionally mine qhash with one CPU thread. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
+A source-based setup kit for a separate Qubitcoin testnet node and an optional CPU miner. The default mining setup uses qhash-cpu with one worker. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
 
 ## Read before downloading
 
