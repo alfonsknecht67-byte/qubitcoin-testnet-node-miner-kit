@@ -30,3 +30,7 @@ Validation: shell syntax; package checksums; launcher tests with synthetic local
 ## Dual-task helper update
 
 Added separate qhash/deqode services, per-task settings/configs/logs, an interactive testnet-only monitor and a backup-preserving helper update. No algorithm or consensus changes. Tests exercise legacy settings, explicit task settings, same-task locking with cross-task independence, config permissions, private credential handling through config rather than command arguments, whitelisted service actions, paused/stale rate display and two repeated mocked helper upgrades. The upgrade test redirects privileged writes to a temporary fake service directory and rejects any start/stop/restart command. Full independent clean installation and sustained simultaneous mining remain unverified.
+
+## Unified start-menu entry point
+
+Added start-testnet.sh for both fresh and existing installations. It runs fresh setup only when the installed directory is absent; incomplete existing installations stop without overwriting them. Missing/outdated helpers require UPDATE before using the existing backup-preserving updater. Current installations open the monitor directly. Tests cover fresh setup, existing/current helpers, cancellation, partial installs and update failure in disposable homes with setup, updater and service commands mocked. No live node or miner was controlled. This does not replace the outstanding clean-machine end-to-end validation.

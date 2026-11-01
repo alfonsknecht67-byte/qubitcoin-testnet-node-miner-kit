@@ -1,5 +1,18 @@
 # Qubitcoin Testnet: your first node and CPU miner
 
+## Open the start menu (new or existing installation)
+
+Download the [current source ZIP](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-node-miner-kit/archive/refs/heads/main.zip), extract its contents to `C:\qtc-testnet-kit`, then run this **inside Ubuntu**:
+
+```bash
+bash /mnt/c/qtc-testnet-kit/start-testnet.sh
+```
+
+With a new installation, this runs the guided setup and then opens the menu. With an existing kit, it opens the installed menu or offers to update missing/outdated menu helpers first (type `UPDATE`). Downloading a ZIP alone does not update an installed kit. Keep the existing installation and wallet; do not uninstall them.
+
+The menu lets you start/stop qhash, deqode or both. Choose `6` and confirm `YES` to stop both miners and leave the node running. Opening the menu does not start mining. `Q` closes the menu without stopping anything. Start/stop choices affect the current session, not the services' startup settings. Older versioned release ZIPs do not contain this entry point; use the current source ZIP above.
+
+
 **Beginner guide for Windows 11 + Ubuntu 26.04 on WSL2**  
 Updated 31 October 2026. This kit follows a specific, pinned testnet software version.
 

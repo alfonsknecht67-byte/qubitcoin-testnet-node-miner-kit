@@ -14,6 +14,7 @@ subprocess.run(['bash', '-n', str(ROOT / 'setup-testnet.sh')], check=True)
 subprocess.run(['bash', '-n', str(ROOT / 'repair-log-permissions.sh')], check=True)
 ast.parse((ROOT / 'start-miner.py').read_text())
 subprocess.run(['bash', '-n', str(ROOT / 'update-dual-task.sh')], check=True)
+subprocess.run(['bash', '-n', str(ROOT / 'start-testnet.sh')], check=True)
 for helper in ('miner-unit.py', 'testnet-monitor.py'):
     ast.parse((ROOT / helper).read_text())
 for line in (ROOT / 'SHA256SUMS.txt').read_text().splitlines():
@@ -32,7 +33,7 @@ assert "fallback.get('threads', 1)" in (ROOT / 'start-miner.py').read_text()
 assert settings.index('git apply "$KIT_DIR/miner-affinity-fix/linux-core-first.patch"') < settings.index('./autogen.sh >"$LOGS/miner-build.log"')
 assert './affinity-test >"$LOGS/affinity-test.log"' in settings
 ast.parse((ROOT / 'miner-affinity-fix/diagnose.py').read_text())
-for test in ('test-launcher.py', 'test-dual-task.py', 'test-upgrade.py'):
+for test in ('test-launcher.py', 'test-dual-task.py', 'test-upgrade.py', 'test-entrypoint.py'):
     subprocess.run(['python3', str(ROOT / test)], check=True)
 assert 'install -m 600 /dev/null "$BASE/miner.log"' in settings
 assert settings.index('install -m 600 /dev/null "$BASE/miner.log"') < settings.index('bash "$KIT_DIR/update-dual-task.sh"')
