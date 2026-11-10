@@ -1,5 +1,16 @@
 # Fresh installation: testnet node and patched CPU miner
 
+## Choose your operating system
+
+Use the same kit source for both paths:
+- [Windows 10/11 with current WSL2](PLATFORMS.md#windows)
+- [Native Ubuntu Linux](PLATFORMS.md#ubuntu-linux)
+
+Ubuntu 26.04, x86-64, AVX2/AES and systemd are the actual installer requirements.
+Windows 11 is not a hard requirement. Platform prerequisites and complete-install
+test coverage are separate; see PLATFORMS.md.
+
+
 > **Already running a testnet node?** Read [Existing-installation check](UPDATE-CHECK.md) first. The standard helper update targets `~/qubitcoin-community-testnet` and `qubitcoin-community-testnet-*` services. For a compatible existing miner in another folder, use the [guided miner update](MANUAL-UPDATE.md): select the installation, check, back up and explicitly confirm the starter replacement. Do not use fresh setup or the standard helper updater to migrate a custom layout. Keep your existing node and wallet.
 
 
@@ -24,7 +35,7 @@ Download [the current source ZIP](https://github.com/alfonsknecht67-byte/qubitco
 
 ## 2. Prepare Ubuntu / WSL2
 
-Follow [START-HERE.md, steps 2–3](START-HERE.md#2-install-ubuntu-inside-windows) for Windows 11 and Ubuntu 26.04. If Ubuntu is already installed, do not reinstall WSL. Run the next command **inside Ubuntu**, not PowerShell. Never delete wallet folders, unregister WSL or stop another node to make room for this kit.
+Follow [START-HERE.md, steps 2–3](START-HERE.md#2-install-ubuntu-inside-windows) for Windows 10/11 with recent WSL2 and Ubuntu 26.04. Native Ubuntu users can follow [the Linux path](PLATFORMS.md#ubuntu-linux). If Ubuntu is already installed, do not reinstall WSL. Run the next command **inside Ubuntu**, not PowerShell. Never delete wallet folders, unregister WSL or stop another node to make room for this kit.
 
 ## 3. Run the fresh installer
 

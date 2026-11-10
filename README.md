@@ -1,5 +1,16 @@
 # Qubitcoin Testnet — Node & CPU Miner Kit
 
+## Choose your operating system
+
+Use the same kit source for both paths:
+- [Windows 10/11 with current WSL2](PLATFORMS.md#windows)
+- [Native Ubuntu Linux](PLATFORMS.md#ubuntu-linux)
+
+Ubuntu 26.04, x86-64, AVX2/AES and systemd are the actual installer requirements.
+Windows 11 is not a hard requirement. Platform prerequisites and complete-install
+test coverage are separate; see PLATFORMS.md.
+
+
 > **Already running a testnet node?** Read [Existing-installation check](UPDATE-CHECK.md) first. The standard helper update targets `~/qubitcoin-community-testnet` and `qubitcoin-community-testnet-*` services. For a compatible existing miner in another folder, use the [guided miner update](MANUAL-UPDATE.md): select the installation, check, back up and explicitly confirm the starter replacement. Do not use fresh setup or the standard helper updater to migrate a custom layout. Keep your existing node and wallet.
 
 
@@ -81,7 +92,7 @@ With a new installation, this runs the guided setup and then opens the menu. Wit
 The menu lets you start/stop qhash, deqode or both. Choose `6` and confirm `YES` to stop both miners and leave the node running. Opening the menu does not start mining. `Q` closes the menu without stopping anything. Start/stop choices affect the current session, not the services' startup settings. Older versioned release ZIPs do not contain this entry point; use the current source ZIP above.
 
 
-**Unofficial community guide Â· Windows 11 + Ubuntu 26.04 / WSL2 Â· CPU-only Â· release candidate**
+**Unofficial community guide Â· Windows with WSL2 or native Ubuntu 26.04 Â· CPU-only Â· release candidate**
 
 A source-based setup kit for a separate Qubitcoin testnet node and an optional CPU miner. Mining is optional: choose qhash-cpu, deqode or both, starting with one worker per task on a fresh installation. No CUDA or prebuilt executable is included. This project is not an official Qubitcoin release and is not endorsed by the Qubitcoin team.
 

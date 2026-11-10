@@ -1,5 +1,16 @@
 # Qubitcoin Testnet: your first node and CPU miner
 
+## Choose your operating system
+
+Use the same kit source for both paths:
+- [Windows 10/11 with current WSL2](PLATFORMS.md#windows)
+- [Native Ubuntu Linux](PLATFORMS.md#ubuntu-linux)
+
+Ubuntu 26.04, x86-64, AVX2/AES and systemd are the actual installer requirements.
+Windows 11 is not a hard requirement. Platform prerequisites and complete-install
+test coverage are separate; see PLATFORMS.md.
+
+
 > **Already running a testnet node?** Read [Existing-installation check](UPDATE-CHECK.md) first. The standard helper update targets `~/qubitcoin-community-testnet` and `qubitcoin-community-testnet-*` services. For a compatible existing miner in another folder, use the [guided miner update](MANUAL-UPDATE.md): select the installation, check, back up and explicitly confirm the starter replacement. Do not use fresh setup or the standard helper updater to migrate a custom layout. Keep your existing node and wallet.
 
 
@@ -16,7 +27,7 @@ With a new installation, this runs the guided setup and then opens the menu. Wit
 The menu lets you start/stop qhash, deqode or both. Choose `6` and confirm `YES` to stop both miners and leave the node running. Opening the menu does not start mining. `Q` closes the menu without stopping anything. Start/stop choices affect the current session, not the services' startup settings. Older versioned release ZIPs do not contain this entry point; use the current source ZIP above.
 
 
-**Beginner guide for Windows 11 + Ubuntu 26.04 on WSL2**  
+**Windows 10/11 + current WSL2: Ubuntu 26.04 beginner guide**  
 Updated 31 October 2026. This kit follows a specific, pinned testnet software version.
 
 You do not need to be a programmer. Read one step, do it, then move to the next. If a step fails, stop there and ask for help in the **Qubitcoin Bubble Map & Research group**. Do not delete a wallet or try random repair commands.
@@ -34,7 +45,7 @@ The node also validates deqode / Task 1 blocks received from the network. The up
 
 ### Before you begin
 
-Use a Windows 11 PC with an Intel or AMD x86-64 processor supporting AVX2 and AES, preferably at least 8 GB RAM and 20 GB free disk space. This kit does not target Windows-on-ARM or Apple Silicon. A computer that does not meet the helper's checks needs a different build; ask for help.
+Use an Intel or AMD x86-64 PC with Windows 10/11 and current WSL2, or native Ubuntu 26.04. The processor must support AVX2 and AES; use preferably at least 8 GB RAM and 20 GB free disk space. Windows 11 is not required. This kit does not target Windows-on-ARM or Apple Silicon. A computer that does not meet the helper's checks needs a different build; ask for help.
 
 Keep a laptop plugged in and ventilated. Mining adds processor load and electricity use. One thread is the starting point, not a request to use the whole CPU.
 
