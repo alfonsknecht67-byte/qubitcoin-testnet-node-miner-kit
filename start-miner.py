@@ -28,6 +28,32 @@ def task_settings(settings, task):
         raise ValueError('affinity must be auto or off')
     return threads, affinity
 
+def resource_settings(settings, task, allowed):
+    """Validate opt-in placement before touching credentials or process affinity."""
+    task_settings(settings, task)
+    tasks = settings.get('tasks', {})
+    assigned = {}
+    for name in TASKS:
+        task_settings(settings, name)
+        selected = tasks.get(name, {})
+        cpus = selected.get('cpu-set')
+        if cpus is not None:
+            threads, _ = task_settings(settings, name)
+            if (not isinstance(cpus, list) or not cpus
+                or any(type(c) is not int or c < 0 for c in cpus)
+                or len(set(cpus)) != len(cpus) or threads > len(cpus)):
+                raise ValueError('invalid task CPU set')
+            assigned[name] = set(cpus)
+    if len(assigned) == 2 and assigned[TASKS[0]] & assigned[TASKS[1]]:
+        raise ValueError('task CPU sets must not overlap')
+    cpus = assigned.get(task)
+    if cpus is not None and (allowed is None or not cpus <= set(allowed)):
+        raise ValueError('task CPU set is unavailable')
+    memory = tasks.get(task, {}).get('deqode-memory-mib')
+    if memory is not None and (task != 'deqode' or type(memory) is not int or not 1 <= memory <= 4096):
+        raise ValueError('invalid deqode pattern-list memory budget')
+    return cpus, memory
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--task', choices=TASKS, default='qhash-cpu')
@@ -37,6 +63,8 @@ def main(argv=None):
     settings_path = base / 'miner-settings.json'
     settings = json.loads(settings_path.read_text(encoding='utf-8')) if settings_path.exists() else {}
     threads, affinity = task_settings(settings, args.task)
+    allowed = os.sched_getaffinity(0) if hasattr(os, 'sched_getaffinity') else None
+    cpus, memory = resource_settings(settings, args.task, allowed)
     # Refuse another kit-managed process for the same task, but allow the other task.
     lock = os.open(base / ('miner-' + args.task + '.lock'), os.O_CREAT | os.O_RDWR, 0o600)
     try:
@@ -51,8 +79,10 @@ def main(argv=None):
         options = {'algo': args.task, 'threads': threads,
             'url': 'http://127.0.0.1:18452', 'user': user, 'pass': password,
             'coinbase-addr': address, 'no-stratum': True, 'no-color': True, 'hash-meter': True}
-        if affinity == 'off':
+        if affinity == 'off' or cpus is not None:
             options['cpu-affinity'] = '0'
+        if memory is not None:
+            options['deqode-mem'] = memory
         # Atomic replacement prevents partial configs; temporary file mode is 600.
         temp = None
         try:
@@ -65,6 +95,9 @@ def main(argv=None):
             if temp is not None:
                 temp.unlink(missing_ok=True)
         miner = str(base / 'miner-source/qubitcoin-miner')
+        # Only this future launcher process and its children are restricted.
+        if cpus is not None:
+            os.sched_setaffinity(0, cpus)
         os.execv(miner, [miner, '--config=' + str(config)])
     finally:
         os.close(lock)

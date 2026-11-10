@@ -1,5 +1,56 @@
 # Qubitcoin Testnet — Node & CPU Miner Kit
 
+## Resource planning and offline component benchmarks
+
+The new resource planner is **read-only**. Run it from the extracted source kit:
+
+```bash
+python3 resource_plan.py
+python3 resource_plan.py --profile balanced --tasks qhash-cpu,deqode
+```
+
+It recommends worker counts using the process's allowed CPUs, visible physical-core topology,
+available RAM and cgroup v2 limits when available. It leaves a CPU/RAM allowance for the node
+and system where possible. It never writes `miner-settings.json`, changes running affinity,
+starts/stops services or creates a wallet. WSL topology describes what Linux can see, which
+need not match the host's physical layout. Unknown topology/RAM is explicitly flagged.
+
+The output's `suggested_settings` can be reviewed for a **future** miner start. The updated
+launcher accepts optional per-task `cpu-set` arrays and a deqode `deqode-memory-mib` value.
+CPU sets for both configured tasks must be disjoint, available to the launching process and
+large enough for their worker counts. CPU IDs above 63 are supported. Existing settings
+without these keys keep their old behavior. An absent task is **not** automatically disabled;
+if the plan cannot accommodate both tasks, do not leave an old second miner running unnoticed.
+Pinning applies only to a newly launched miner process; an unrestricted other process can
+still use those CPUs. Deqode's memory value budgets its pattern lists per worker, **not total RAM**.
+All memory allowances are estimates, not enforced process limits.
+
+The offline benchmark uses the pinned upstream CPU circuit and deqode decoder components.
+It is a **separate executable**, with fixed public fixtures, correctness checks and no miner
+main, networking, RPC, wallet access or block submission. Building requires Linux, GCC and
+the usual configured miner source/header dependencies. Use a separate source tree; no
+configuration, build or binary replacement is performed in an installed kit:
+
+```bash
+python3 bench/build_offline.py --source /path/to/separate/configured-miner-source --output /path/to/new/offline-build
+# Preview only; default execution is disabled:
+python3 bench/run_offline.py --build-dir /path/to/new/offline-build --task qhash-cpu --workers 1,2
+# Deliberately execute low-priority, CPU-pinned standalone benchmark processes:
+python3 bench/run_offline.py --build-dir /path/to/new/offline-build --task qhash-cpu --workers 1,2 --rounds 64 --repeat 3 --run --output qhash-component-results.json
+python3 bench/run_offline.py --build-dir /path/to/new/offline-build --task deqode --workers 1,2 --rounds 1000 --repeat 3 --run --output deqode-component-results.json
+```
+
+Select worker counts that fit your machine. Builds and result files refuse overwrites.
+The harness source, upstream kernel sources and executable are checked by hashes.
+Reports retain compiler flags, fixed fixture IDs, repeated measurements and sample ranges.
+Short measurements are flagged; startup and correctness-check time is included in wall time.
+QHash is measured in circuit simulations/s; deqode in processed syndromes/s. These are
+**component measurements, not complete mining hashrate, accepted blocks or reward estimates**.
+The small fixed deqode fixture is not live testnet sizing. Do not add or directly compare
+the two task rates. Shared workloads, thermal state and quotas affect results; this update
+does not establish or promise a throughput improvement. Nothing is applied to existing
+installations merely by downloading the kit.
+
 ## Open the start menu (new or existing installation)
 
 Download the [current source ZIP](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-node-miner-kit/archive/refs/heads/main.zip), extract its contents to `C:\qtc-testnet-kit`, then run this **inside Ubuntu**:

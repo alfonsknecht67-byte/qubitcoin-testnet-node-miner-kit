@@ -34,3 +34,30 @@ Added separate qhash/deqode services, per-task settings/configs/logs, an interac
 ## Unified start-menu entry point
 
 Added start-testnet.sh for both fresh and existing installations. It runs fresh setup only when the installed directory is absent; incomplete existing installations stop without overwriting them. Missing/outdated helpers require UPDATE before using the existing backup-preserving updater. Current installations open the monitor directly. Tests cover fresh setup, existing/current helpers, cancellation, partial installs and update failure in disposable homes with setup, updater and service commands mocked. No live node or miner was controlled. This does not replace the outstanding clean-machine end-to-end validation.
+
+## 10 November 2026: resource planning and offline components
+
+Added read-only CPU/RAM recommendations, optional per-task CPU sets and deqode pattern-list
+memory settings in the future launcher. Existing settings retain their behavior. Planning
+does not apply settings, disable another task, or reserve exclusive host resources.
+
+Validation on Linux x86_64 with GCC: all 22 new unittest methods passed, covering SMT/core
+selection, sparse/high CPU IDs, cgroup v2 CPU/memory bounds, low/unknown RAM, disjoint CPU
+sets, rejected settings, mocked affinity/exec, malformed measurements, fixture separation,
+executable hash checks, dry-run defaults and repeated-result summaries. The existing
+launcher, dual-task, helper-upgrade and entry-point tests also passed with service actions
+mocked. Windows passed the 18 portable methods; 4 Linux-specific launcher methods were
+explicitly skipped there and executed successfully on Linux.
+
+Built a separate native executable from pinned upstream QHash CPU simulation, deqode
+instance/solver and SHA-256 sources. Native correctness/smoke runs passed for both tasks,
+with one/two separate benchmark processes and two repeats. QHash checks zero-angle
+expectations, finite bounds and repeatability; every reported deqode witness is checked
+for Pauli weight and syndrome consistency. The executable links no network/submission
+entry points. It does not contain the miner main or access a node/wallet.
+
+These short smoke measurements are flagged as short samples and do not establish a
+mining speedup. The benchmark measures circuit simulations or syndromes processed, not
+full mining hashrate, consensus acceptance, blocks or rewards. Test fixture parameters
+are fixed and do not represent current live testnet sizing. No running node, miner,
+configuration or service was changed, restarted or signalled during validation.

@@ -1,0 +1,15 @@
+{
+  "upstream_commit": "62b3d51395ce2e2bda0d4ca56368842f4c11b6a9",
+  "sha256": {
+    "algo/qhash/qhash-cpu.c": "40b068a8757af68b1b33462bd52c951229869047788d48fa6dbdc18dbeb5e777",
+    "algo/qhash/qhash-gate.h": "f2627b848faef2a38735225b0ae3fd33e17d97002f300bb93fc1502044af81fa",
+    "algo/deqode/deqode.c": "4b89769cd95930702a8c8d0c79fed3f63087709faf4eb0babbb77728fa8b71e2",
+    "algo/deqode/deqode-stern.c": "2c62dd732d90dce076d0348d9788fb287f32af47efd73d721b6327ee79d80c0d",
+    "algo/deqode/deqode-gate.h": "a54d8363eaf923592bf73924434dce2362923ef56b2d31c03b6e3ad541924098",
+    "algo/sha/sha256-hash.c": "5902917a2e58b907f4c8a38ad09d4fdc16cd0e1e7b46ff9056d969f3195e9af2",
+    "malloc-huge.c": "273f99edccad08b9a3c1615f2b7dd4f5154482821a1029ac3e28098b8b1c1339",
+    "algo/sha/sph_sha2.c": "2a6a363ea1a77ba39bfaf54e910efecb8ae26770f40d1fd2d077e9a35decfbfc",
+    "algo/sha/sph_sha2.h": "418c64f06db0dcf5ca027113b4d280dbddb8a1703d3d23680e4354b1c0f320ca",
+    "algo/sha/sha256-hash.h": "c6c138a3c8327ce3929f396a005116614405b35691f986a53d735e65bbdea6ac"
+  }
+}

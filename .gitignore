@@ -13,3 +13,5 @@ miner-*-local.json
 miner-settings.json
 *.lock
 dual-task-backup.*/
+offline-build*/
+*-component-results.json
