@@ -9,8 +9,9 @@ The current automatic update route supports the **standard community kit layout*
 
 **Other folders and custom testnet service names are not automatically migrated.**
 For example, an installation at `~/qubitcoin-testnet` using `qubitcoin-testnet-*`
-services is outside this automatic update route. This does not mean its node or
-miners have failed or need reinstalling.
+services is outside the standard helper update route. Use the separate
+[guided miner starter update](MANUAL-UPDATE.md) for a compatible layout. This does
+not mean its node or miners have failed or need reinstalling.
 
 ## 1. Check the Ubuntu environment
 
@@ -59,10 +60,10 @@ kit may lack the deqode service; the dual-task updater adds that service. A sepa
 mainnet service can coexist and must remain untouched. Service presence is not
 proof of synchronization or current mining activity.
 
-If the testnet services use other names, stop here. The current helper has no
-custom-folder or custom-service migration mode. Do not rename directories,
-replace a wallet, copy authentication files between installations or substitute
-paths in the updater to make it proceed.
+If the testnet services use other names, stop the standard helper procedure and
+use the [guided miner starter update](MANUAL-UPDATE.md), which checks compatibility
+before any replacement. Do not rename directories, replace a wallet or substitute
+paths in the standard updater to force it to proceed.
 
 ## 4. Continue only for a matching standard installation
 
@@ -83,7 +84,8 @@ use the new read-only resource planner from the downloaded source without instal
 it, but its output is only a recommendation and does not update your existing launcher.
 An older launcher may not understand the new CPU-set or deqode-memory fields.
 
-A documented, separately tested migration path for custom installations remains
-outstanding. Until it exists, this guide deliberately stops rather than presenting
-an unverified update command. If requesting help, share service names and nonsecret
+The [guided manual update](MANUAL-UPDATE.md) now provides a separate path for
+compatible existing layouts. It replaces only the miner starter after checks,
+backup and explicit confirmation; it does not migrate the node or wallet. Other
+layouts still stop safely. If requesting help, share service names and nonsecret
 paths only; never share cookies, private keys or private miner configuration files.

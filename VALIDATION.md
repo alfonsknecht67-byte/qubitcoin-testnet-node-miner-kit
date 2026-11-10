@@ -61,3 +61,25 @@ mining speedup. The benchmark measures circuit simulations or syndromes processe
 full mining hashrate, consensus acceptance, blocks or rewards. Test fixture parameters
 are fixed and do not represent current live testnet sizing. No running node, miner,
 configuration or service was changed, restarted or signalled during validation.
+
+## Guided manual update for compatible custom folders
+
+Added `update-miner.py` as a one-command menu and `manual-starter-update.py` as
+its checked backend. The menu identifies an existing folder and matching task
+services, checks the local test chain with read-only `getblockchaininfo`, displays
+configured worker counts, creates a private backup and requires `UPDATE` before
+replacing only the launcher. `RESTORE` restores the backed-up launcher. No node or
+miner executable, wallet, settings, unit definition or service state is edited.
+
+Validation: 14 backend unittest methods and 7 menu unittest methods, in addition
+to the existing 22 resource/benchmark methods and earlier kit checks. Covered
+read-only checks, mainnet/external-RPC rejection, incorrect service arguments and
+payout mismatch, private backups, symlink/tampering rejection, settings/launcher
+changes between preparation and installation, atomic replacement and rollback.
+The full menu was exercised with cancellation and confirmed installation in
+disposable homes; services and RPC were simulated, and all non-launcher files
+were checked unchanged. No real user installation was updated by these tests.
+
+The supported layout and remaining independent user-validation boundary are
+documented in `MANUAL-UPDATE.md`. This does not claim compatibility with arbitrary
+node layouts, other RPC ports, custom launcher behavior or mainnet migrations.

@@ -1,6 +1,6 @@
 # Fresh installation: testnet node and patched CPU miner
 
-> **Already running a testnet node? Check before updating.** The automatic update route supports the standard kit at `~/qubitcoin-community-testnet`, using `qubitcoin-community-testnet-*` service names, in the same Ubuntu distribution and Linux user used for installation. Different folders or custom testnet service names are **not automatically migrated**. If that is your setup, do not run the start-menu, setup or update scripts to migrate it. Keep your existing node, miner and wallet. Read [Existing-installation check](UPDATE-CHECK.md) first.
+> **Already running a testnet node?** Read [Existing-installation check](UPDATE-CHECK.md) first. The standard helper update targets `~/qubitcoin-community-testnet` and `qubitcoin-community-testnet-*` services. For a compatible existing miner in another folder, use the [guided miner update](MANUAL-UPDATE.md): select the installation, check, back up and explicitly confirm the starter replacement. Do not use fresh setup or the standard helper updater to migrate a custom layout. Keep your existing node and wallet.
 
 
 ## Open the start menu (new or existing installation)
