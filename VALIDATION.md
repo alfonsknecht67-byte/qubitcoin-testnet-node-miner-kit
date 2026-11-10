@@ -71,11 +71,15 @@ configured worker counts, creates a private backup and requires `UPDATE` before
 replacing only the launcher. `RESTORE` restores the backed-up launcher. No node or
 miner executable, wallet, settings, unit definition or service state is edited.
 
-Validation: 14 backend unittest methods and 7 menu unittest methods, in addition
+Validation: 20 backend unittest methods and 7 menu unittest methods, in addition
 to the existing 22 resource/benchmark methods and earlier kit checks. Covered
 read-only checks, mainnet/external-RPC rejection, incorrect service arguments and
 payout mismatch, private backups, symlink/tampering rejection, settings/launcher
 changes between preparation and installation, atomic replacement and rollback.
+Additional cases preserve a selected versioned executable, reject dynamic selections,
+compare active miner executables and refuse executable changes after preparation.
+Two permission cases stop before a write and provide a narrowly scoped repair hint
+only for the supported administrator-owned starter-folder layout.
 The full menu was exercised with cancellation and confirmed installation in
 disposable homes; services and RPC were simulated, and all non-launcher files
 were checked unchanged. No real user installation was updated by these tests.

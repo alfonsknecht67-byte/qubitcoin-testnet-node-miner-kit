@@ -48,13 +48,16 @@ def owned_file(path, root, private=False):
     return path.read_bytes()
 
 
-def template(base):
+def template(base, binary_relative='miner-source/qubitcoin-miner'):
     data = (ROOT / 'start-miner.py').read_bytes()
     require(sha(data) == TEMPLATE_SHA, 'Launcher template differs from this reviewed update tool')
     text = data.decode('utf8')
     require(text.count(MARKER) == 1, 'Launcher base is not unique')
     relative = str(base.relative_to(Path.home().resolve()))
     candidate = text.replace(MARKER, 'base = Path.home() / ' + repr(relative), 1)
+    binary_marker = "miner = str(base / 'miner-source/qubitcoin-miner')"
+    require(candidate.count(binary_marker) == 1, 'Launcher executable selection is not unique')
+    candidate = candidate.replace(binary_marker, 'miner = str(base / ' + repr(binary_relative) + ')', 1)
     ast.parse(candidate)
     namespace = {'__name__': '_preflight_only'}
     exec(compile(text, '<reviewed launcher validators>', 'exec'), namespace)
@@ -62,7 +65,7 @@ def template(base):
 
 
 def service_command(name):
-    result = subprocess.run(['systemctl', 'show', name, '--property=ExecStart', '--value', '--no-pager'],
+    result = subprocess.run(['systemctl', 'show', name, '--property=ExecStart,MainPID', '--no-pager'],
                             capture_output=True, text=True, timeout=8, check=True)
     return result.stdout
 
@@ -82,6 +85,37 @@ def check_service(name, task, launcher, reader):
     if task == 'qhash-cpu':
         accepted.append([])
     require(args[index + 1:] in accepted, 'Unexpected task arguments; no service is modified')
+    return raw
+
+
+def sha_file(path):
+    return sha(path.read_bytes())
+
+
+def selected_binary(source, base):
+    """Read a static executable selection without running the old launcher."""
+    tree = ast.parse(source.decode('utf8'))
+    values = [node.value for node in ast.walk(tree) if isinstance(node, ast.Assign)
+              and any(isinstance(target, ast.Name) and target.id == 'miner' for target in node.targets)]
+    require(len(values) == 1, 'Existing miner executable selection is not a single supported static path')
+    def path_value(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return Path(node.value)
+        if isinstance(node, ast.Name) and node.id == 'base':
+            return base
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+            return path_value(node.left) / path_value(node.right)
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+            and node.func.id in ('str', 'Path') and len(node.args) == 1 and not node.keywords):
+            return path_value(node.args[0])
+        raise UpdateError('Existing miner executable path is dynamic; keep the existing starter for review')
+    binary = path_value(values[0])
+    if not binary.is_absolute():
+        binary = base / binary
+    require(binary.name == 'qubitcoin-miner' and binary.resolve().is_relative_to(base)
+            and binary.is_file() and binary.stat().st_uid == os.getuid(),
+            'Existing miner executable must be a user-owned file inside this installation')
+    return binary
 
 
 def read_chain(base):
@@ -110,9 +144,24 @@ def inspect(base, services, service_reader=service_command, chain_reader=read_ch
     require(base.is_dir() and base.stat().st_uid == os.getuid(), 'Installed folder must belong to this user')
     require(set(services) <= set(TASKS) and 'qhash-cpu' in services
             and len(set(services.values())) == len(services), 'Select distinct task services')
-    candidate, validators = template(base)
     launcher = base / 'bin/start-miner.py'
     files = {'bin/start-miner.py': owned_file(launcher, base)}
+    directory = launcher.parent
+    if not os.access(directory, os.W_OK | os.X_OK):
+        info = directory.stat()
+        message = 'The starter folder is not writable; no update was installed'
+        if info.st_uid == 0 and info.st_gid == 0 and info.st_mode & 0o777 == 0o755:
+            command = shlex.join(['sudo', '/usr/bin/chown', '--no-dereference', '--',
+                                  f'{os.getuid()}:{os.getgid()}', str(directory)])
+            message += '\nIts administrator-owned folder can be returned to your user with:\n' + command
+            message += '\nThis changes only the folder owner, not its files. Then reopen the update menu'
+        else:
+            message += '; its ownership/permissions need administrator review'
+        raise UpdateError(message)
+    binary = selected_binary(files['bin/start-miner.py'], base)
+    binary_relative = str(binary.relative_to(base))
+    binary_sha256 = sha_file(binary)
+    candidate, validators = template(base, binary_relative)
     settings_path = base / 'miner-settings.json'
     if settings_path.exists():
         files['miner-settings.json'] = owned_file(settings_path, base)
@@ -121,9 +170,14 @@ def inspect(base, services, service_reader=service_command, chain_reader=read_ch
     address = files['mining-address.txt'].decode().strip()
     require(bool(address), 'Mining address file is empty')
     allowed = os.sched_getaffinity(0)
-    workers, last_workers = {}, {}
+    workers, last_workers, running_binary_checks = {}, {}, {}
     for task, service in services.items():
-        check_service(service, task, launcher, service_reader)
+        command = check_service(service, task, launcher, service_reader)
+        pid = re.search(r'(?m)^MainPID=(\d+)\s*$', command)
+        running_binary_checks[task] = bool(pid and int(pid.group(1)))
+        if pid and int(pid.group(1)):
+            require(sha_file(Path('/proc') / pid.group(1) / 'exe') == binary_sha256,
+                    'Running miner differs from the selected executable; review before updating')
         workers[task], _ = validators['task_settings'](settings, task)
         validators['resource_settings'](settings, task, allowed)
         name = 'miner-local.json' if task == 'qhash-cpu' else 'miner-deqode-local.json'
@@ -137,11 +191,12 @@ def inspect(base, services, service_reader=service_command, chain_reader=read_ch
                 and url.port == 18452 and url.path in ('', '/') and not url.username
                 and not url.query and not url.fragment, 'Expected local testnet RPC on port 18452')
         last_workers[task] = config.get('threads') if type(config.get('threads')) is int else None
-    require((base / 'miner-source/qubitcoin-miner').is_file(), 'Existing miner executable is missing')
     require(chain_reader(base) == 'test', 'The local RPC did not confirm the test chain')
     return {'base': str(base), 'services': services, 'chain': 'test',
             'configured_workers': workers, 'last_config_workers': last_workers,
             'worker_counts_differ': workers != last_workers,
+            'miner_binary_relative': binary_relative, 'miner_binary_sha256': binary_sha256,
+            'running_binary_checks': running_binary_checks,
             'files_sha256': {name: sha(data) for name, data in files.items()},
             'candidate_sha256': sha(candidate), '_files': files, '_candidate': candidate}
 
@@ -188,6 +243,9 @@ def apply_prepared(directory, rollback=False, inspector=inspect):
     base = directory.parent.resolve()
     require(plan.get('schema') == 1 and plan.get('base') == str(base), 'Prepared plan belongs to another installation')
     current = inspector(base, plan['services'])
+    require(current['miner_binary_relative'] == plan.get('miner_binary_relative')
+            and current['miner_binary_sha256'] == plan.get('miner_binary_sha256'),
+            'Miner executable selection changed or this plan predates executable-preservation checks; prepare again')
     require(current['files_sha256'].get('miner-settings.json') == plan['files_sha256'].get('miner-settings.json'),
             'Settings changed after preparation; prepare and review again')
     old = owned_file(directory / 'original/bin/start-miner.py', directory, private=True)

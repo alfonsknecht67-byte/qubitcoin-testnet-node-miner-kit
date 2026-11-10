@@ -82,6 +82,7 @@ def update_flow(base, names, ask=input, say=print, reader=None):
     say('\nStep 1 of 3: checking your existing testnet setup...')
     state = m.inspect(base, services)
     say('Testnet confirmed. Your node, wallet, miner executable and settings will be kept.')
+    say('  Existing executable retained: '+state['miner_binary_relative'])
     for task,count in state['configured_workers'].items():
         say(f'  {task}: {count} configured worker(s) at the next start')
     if state['worker_counts_differ']:

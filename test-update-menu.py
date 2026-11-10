@@ -29,20 +29,20 @@ class MenuTests(unittest.TestCase):
             w.identify_services(self.base,['other-testnet.service'],lambda name:'{ argv[]=/other/launcher ; }')
 
     def test_exit_at_check_does_not_prepare_or_install(self):
-        state={'configured_workers':{'qhash-cpu':1,'deqode':1},'worker_counts_differ':False}
+        state={'configured_workers':{'qhash-cpu':1,'deqode':1},'worker_counts_differ':False,'miner_binary_relative':'miner-source/qubitcoin-miner'}
         with patch.object(w.m,'inspect',return_value=state),patch.object(w.m,'prepare') as prepare,patch.object(w.m,'apply_prepared') as install:
             w.update_flow(self.base,list(self.services.values()),lambda prompt:'q',self.output.append,self.reader)
         prepare.assert_not_called();install.assert_not_called()
 
     def test_prepare_without_confirmation_never_installs(self):
-        state={'configured_workers':{'qhash-cpu':1},'worker_counts_differ':False}
+        state={'configured_workers':{'qhash-cpu':1},'worker_counts_differ':False,'miner_binary_relative':'miner-source/qubitcoin-miner'}
         answers=iter(['1',''])
         with patch.object(w.m,'inspect',return_value=state),patch.object(w.m,'prepare',return_value=Path('/tmp/private-backup')),patch.object(w.m,'apply_prepared') as install:
             w.update_flow(self.base,list(self.services.values()),lambda prompt:next(answers),self.output.append,self.reader)
         install.assert_not_called()
 
     def test_explicit_update_installs_only_prepared_directory(self):
-        state={'configured_workers':{'qhash-cpu':1},'worker_counts_differ':False}
+        state={'configured_workers':{'qhash-cpu':1},'worker_counts_differ':False,'miner_binary_relative':'miner-source/qubitcoin-miner'}
         answers=iter(['1','UPDATE']);backup=Path('/tmp/private-backup')
         with patch.object(w.m,'inspect',return_value=state),patch.object(w.m,'prepare',return_value=backup),patch.object(w.m,'apply_prepared',return_value='installed') as install:
             w.update_flow(self.base,list(self.services.values()),lambda prompt:next(answers),self.output.append,self.reader)
@@ -67,7 +67,7 @@ class MenuTests(unittest.TestCase):
         for confirmation in ('','UPDATE'):
             with self.subTest(confirmation=confirmation),tempfile.TemporaryDirectory() as temp:
                 home=Path(temp);base=home/'custom-testnet'
-                files={'bin/start-miner.py':b'# old starter\n',
+                files={'bin/start-miner.py':b"# old starter\nminer = str(base / 'miner-source/qubitcoin-miner')\n",
                        'miner-source/qubitcoin-miner':b'fake binary, never executed',
                        'data/testnet/.cookie':b'synthetic:unused',
                        'data/testnet/wallet-marker':b'preserve wallet',

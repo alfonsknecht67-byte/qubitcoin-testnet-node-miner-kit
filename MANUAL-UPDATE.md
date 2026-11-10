@@ -6,6 +6,8 @@ including an installation in a different folder. **You carry out every step your
 This updates the **miner starter**, not the miner's calculation engine or the node.
 Your wallet, blockchain, worker settings, service names and existing miner executable
 are kept. Running nodes and miners are not stopped or restarted by this update.
+An existing static selection of a versioned miner executable is retained. The menu
+shows that executable, and checks it against the running process when available.
 
 ## 1. Download and open Ubuntu
 
@@ -45,6 +47,12 @@ No personal hash, machine-specific backup name, manual source editing or AI assi
 is needed. Empty input or **Q** exits menu selections. If a check prints **STOP**, do
 not run fresh setup as a workaround; read the reason and keep your installation intact.
 
+If an older installation has an administrator-owned starter folder, the menu stops
+before changing files and displays one specific ownership-repair command. Run that
+command only if you want to return your own starter folder to your user; Ubuntu may
+ask for your password. It changes only that directory's owner, without recursion or
+changes to its files. Then reopen the menu. Other permission problems require review.
+
 ## 4. After the update
 
 The new starter is used at the **next normal miner start**. Current miner processes
@@ -79,6 +87,8 @@ software was installed:
   `getblockchaininfo` call. Proxies and redirects are disabled for that request.
 - One identifiable QHash service and optionally one deqode service using that Python
   starter. The service names must identify testnet; no service units are edited.
+- A single statically identifiable miner executable inside the installation. Versioned
+  selections are preserved; dynamic/custom executable-selection code stops for review.
 
 Missing/ambiguous services, different RPC layouts, mainnet, inaccessible files or
 unexpected launch arguments cause a clear stop. This is not a general-purpose node

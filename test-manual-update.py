@@ -22,7 +22,7 @@ class ManualUpdateTests(unittest.TestCase):
         self.base = self.home/'custom-testnet'; self.base.mkdir()
         self.home_patch = patch.object(Path, 'home', return_value=self.home)
         self.home_patch.start(); self.addCleanup(self.home_patch.stop)
-        self.files = {'bin/start-miner.py':b'# original launcher, never executed\n',
+        self.files = {'bin/start-miner.py':b"# original launcher, never executed\nminer = str(base / 'miner-source/qubitcoin-miner')\n",
                       'miner-source/qubitcoin-miner':b'synthetic binary, never executed',
                       'data/testnet/.cookie':b'synthetic:unused',
                       'data/testnet/wallet-marker':b'leave wallet unchanged',
@@ -128,6 +128,56 @@ class ManualUpdateTests(unittest.TestCase):
         self.assertEqual(json.loads(seen[0].data)['method'],'getblockchaininfo')
         self.assertEqual(build.call_args.args[0].proxies,{})
         self.assertIsNone(build.call_args.args[1].redirect_request(None,None,None,None,None,None))
+
+    def test_versioned_executable_selection_is_preserved(self):
+        binary=self.base/'miner-versions/verified/qubitcoin-miner'
+        binary.parent.mkdir(parents=True);binary.write_bytes(b'versioned executable, never run')
+        live=self.base/'bin/start-miner.py';live.write_text('miner = '+repr(str(binary))+'\n')
+        original=live.read_bytes();state=self.inspect()
+        self.assertEqual(state['miner_binary_relative'],'miner-versions/verified/qubitcoin-miner')
+        self.assertIn(b'miner-versions/verified/qubitcoin-miner',state['_candidate'])
+        directory=m.prepare(state)
+        m.apply_prepared(directory,inspector=self.inspect)
+        self.assertEqual(self.inspect()['miner_binary_sha256'],m.sha(binary.read_bytes()))
+        m.apply_prepared(directory,rollback=True,inspector=self.inspect)
+        self.assertEqual(live.read_bytes(),original)
+
+    def test_dynamic_executable_selection_is_rejected(self):
+        (self.base/'bin/start-miner.py').write_text('miner = choose_binary()\n')
+        with self.assertRaises(m.UpdateError):self.inspect()
+
+    def test_active_binary_mismatch_is_rejected(self):
+        real_sha=m.sha_file
+        def sha_file(path):return '0'*64 if str(path).startswith('/proc/') else real_sha(path)
+        def reader(name):return self.service(name)+'\nMainPID=123\n'
+        with patch.object(m,'sha_file',side_effect=sha_file),self.assertRaises(m.UpdateError):
+            m.inspect(self.base,self.services,reader,lambda base:'test')
+
+    def test_binary_changed_after_preparation_is_rejected(self):
+        directory=m.prepare(self.inspect())
+        (self.base/'miner-source/qubitcoin-miner').write_bytes(b'changed binary')
+        with self.assertRaises(m.UpdateError):m.apply_prepared(directory,inspector=self.inspect)
+
+    def test_root_owned_folder_stops_with_narrow_repair_hint(self):
+        real_stat=Path.stat;directory=self.base/'bin'
+        def fake_stat(path,*args,**kwargs):
+            value=real_stat(path,*args,**kwargs)
+            if path==directory:
+                fields=list(value);fields[4]=0;fields[5]=0
+                return os.stat_result(fields)
+            return value
+        with patch.object(Path,'stat',fake_stat),patch.object(m.os,'access',return_value=False),self.assertRaises(m.UpdateError) as error:
+            self.inspect()
+        message=str(error.exception)
+        self.assertIn('--no-dereference',message)
+        self.assertIn(str(directory),message)
+        self.assertNotIn('--recursive',message)
+        self.assertEqual((self.base/'bin/start-miner.py').read_bytes(),self.files['bin/start-miner.py'])
+
+    def test_unknown_folder_permissions_stop_without_repair_command(self):
+        with patch.object(m.os,'access',return_value=False),self.assertRaises(m.UpdateError) as error:self.inspect()
+        self.assertIn('administrator review',str(error.exception))
+        self.assertNotIn('sudo',str(error.exception))
 
 
 if __name__=='__main__':unittest.main(verbosity=2)
