@@ -1,5 +1,8 @@
 # qhash-cpu and deqode: run one or both testnet tasks
 
+> **Already running a testnet node? Check before updating.** The automatic update route supports the standard kit at `~/qubitcoin-community-testnet`, using `qubitcoin-community-testnet-*` service names, in the same Ubuntu distribution and Linux user used for installation. Different folders or custom testnet service names are **not automatically migrated**. If that is your setup, do not run the start-menu, setup or update scripts to migrate it. Keep your existing node, miner and wallet. Read [Existing-installation check](UPDATE-CHECK.md) first.
+
+
 ## Open the start menu (new or existing installation)
 
 Download the [current source ZIP](https://github.com/alfonsknecht67-byte/qubitcoin-testnet-node-miner-kit/archive/refs/heads/main.zip), extract its contents to `C:\qtc-testnet-kit`, then run this **inside Ubuntu**:
@@ -27,6 +30,8 @@ Each process requests the correct task templates from the node. This is not a si
 Follow [FRESH-INSTALL.md](FRESH-INSTALL.md) using the **current source ZIP**. The installer builds both algorithms and offers `QHASH`, `DEQODE`, `BOTH` or Enter for node-only. Fresh installations start with one worker per selected task. Older release ZIPs are unchanged.
 
 ## Update an existing community kit
+
+**First read [UPDATE-CHECK.md](UPDATE-CHECK.md). This command updates only the standard kit layout; custom paths and testnet service names need a separate verified migration.**
 
 No new node build, blockchain download, wallet creation or WSL reinstall is needed. Download and extract the current source ZIP into `C:\qtc-testnet-kit` (replace the source-kit files, not your installed wallet directory). Inside Ubuntu:
 

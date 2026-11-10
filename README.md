@@ -1,5 +1,8 @@
 # Qubitcoin Testnet — Node & CPU Miner Kit
 
+> **Already running a testnet node? Check before updating.** The automatic update route supports the standard kit at `~/qubitcoin-community-testnet`, using `qubitcoin-community-testnet-*` service names, in the same Ubuntu distribution and Linux user used for installation. Different folders or custom testnet service names are **not automatically migrated**. If that is your setup, do not run the start-menu, setup or update scripts to migrate it. Keep your existing node, miner and wallet. Read [Existing-installation check](UPDATE-CHECK.md) first.
+
+
 ## Resource planning and offline component benchmarks
 
 The new resource planner is **read-only**. Run it from the extracted source kit:
