@@ -45,11 +45,17 @@ The pinned build made by this kit already includes deqode. If you replaced that 
 
 ## Configure CPU use before starting
 
-Inside Ubuntu:
+If the monitor is open, type `Q` and press Enter to return to the Ubuntu terminal. Any running miner keeps running. Open the settings file:
 
 ```bash
 nano "$HOME/qubitcoin-community-testnet/miner-settings.json"
 ```
+
+If your kit is installed in a different directory, open `miner-settings.json` from that directory.
+
+1. Use the arrow keys to find `"deqode"` or `"qhash-cpu"`. In that section, change only the number after `"threads"`, for example from `1` to `2`. Keep the surrounding commas and braces.
+2. Press `Ctrl+O` (the letter O), then Enter to save. Press `Ctrl+X` to close the editor.
+3. Reopen the [monitor](#open-the-monitor) and check the new count under **Configured workers (next start)**. If DeQode is running, choose `4` to stop it, then `3` to start it. For QHash, use `2` and then `1`. Confirm each action with `YES`. If the miner is already stopped, choose only its start option. The testnet node stays running.
 
 For a cautious simultaneous test, use:
 
